@@ -1,15 +1,34 @@
 import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 
-export function requireAuth(req: any, res: Response, next: NextFunction) {
-  const header = req.headers.authorization
-  if (!header) return res.status(401).json({ message: "Unauthorized" })
-  const token = header.split(" ")[1]
+export interface AuthRequest extends Request {
+  user?: {
+    id: string | mongoose.Types.ObjectId
+    email: string
+  }
+}
+
+export const authMiddleware = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET as string)
-    req.user = payload
+    const token = req.header("Authorization")?.replace("Bearer ", "")
+
+    if (!token) {
+      throw new Error()
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    req.user = {
+      id: decoded.userId,
+      email: decoded.email,
+    }
+
     next()
-  } catch (err) {
-    res.status(401).json({ message: "Invalid token" })
+  } catch (error) {
+    res.status(401).json({ message: "Please login!" })
   }
 }

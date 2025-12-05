@@ -14,8 +14,9 @@ export async function register(req: Request, res: Response) {
   const user = await User.create({ email, password: hashed })
 
   const token = await VerificationToken.create({
-    user: user._id,
+    userId: user._id.toString(),
     token: generateRandomToken(),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   })
   await sendVerificationEmail(user.email, token.token)
 
@@ -27,7 +28,7 @@ export async function verify(req: Request, res: Response) {
   const doc = await VerificationToken.findOne({ token }).populate("user")
   if (!doc) return res.status(400).json({ message: "Invalid token" })
 
-  const user = doc.user as any
+  const user = doc.userId as any
   user.isVerified = true
   await user.save()
   await doc.deleteOne()

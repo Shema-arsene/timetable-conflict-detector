@@ -11,9 +11,9 @@ export interface ITimetableSlot {
   module: Schema.Types.ObjectId
   room: Schema.Types.ObjectId
   lecturer: Schema.Types.ObjectId
-  className: string // e.g. "Year2-CS"
+  className: string
   session: SessionType
-  day: string // optional: Mon, Tue...
+  day: string
 }
 
 export interface ITimetable extends Document {
@@ -34,9 +34,18 @@ const TimetableSlot = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Lecturer",
   },
-  className: String,
-  session: String,
-  day: String,
+  className: {
+    required: true,
+    type: String,
+  },
+  session: {
+    required: true,
+    type: String,
+  },
+  day: {
+    required: true,
+    type: String,
+  },
 })
 
 const TimetableSchema = new Schema<ITimetable>({
