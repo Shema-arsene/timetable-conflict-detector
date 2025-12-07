@@ -292,7 +292,7 @@ const NewTimetablePage = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold">Create New Timetable</h1>
+          <h1 className="text-2xl font-semibold">New Timetable</h1>
           <div className="flex items-center gap-3">
             <Label>Session</Label>
             <select
