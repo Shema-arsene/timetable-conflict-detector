@@ -82,12 +82,9 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button variant="ghost">Import Timetable</Button>
-            <Link href="/timetable/new">
-              <Button>Create Timetable</Button>
-            </Link>
-          </div>
+          <Link href="/timetable/new">
+            <Button>Create Timetable</Button>
+          </Link>
         </div>
 
         {/* Stats */}
@@ -117,9 +114,12 @@ const HomePage = () => {
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Timetable Preview</CardTitle>
+                <CardTitle>
+                  {/* Timetable Preview  */}
+                  Recent Timetables
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="py-3 px-5">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -168,7 +168,7 @@ const HomePage = () => {
               <CardHeader>
                 <CardTitle>Recent Conflicts</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="py-3 px-5">
                 <div className="space-y-3">
                   {recentConflicts.map((c) => (
                     <div
@@ -177,7 +177,7 @@ const HomePage = () => {
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-3 h-3 rounded-full mt-2 ${
+                          className={`shrink-0 w-3 h-3 rounded-full mt-2 ${
                             c.severity === "high"
                               ? "bg-red-500"
                               : c.severity === "medium"
@@ -187,7 +187,7 @@ const HomePage = () => {
                         />
                         <div>
                           <p className="text-sm">{c.message}</p>
-                          <p className="text-xs text-gray-400 mt-1">{c.time}</p>
+                          <p className="text-xs text-gray-400">{c.time}</p>
                         </div>
                       </div>
 
@@ -208,42 +208,20 @@ const HomePage = () => {
               </CardContent>
             </Card>
 
-            <Card className="mt-6">
+            <Card className="mt-6 p-3">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
-                <Button variant="outline">Manage Rooms</Button>
-                <Button variant="outline">Manage Lecturers</Button>
-                <Button variant="outline">Upload CSV</Button>
+                <Button variant="outline">
+                  <Link href="/timetable/new">Manage Rooms</Link>
+                </Button>
+                <Button variant="outline">
+                  <Link href="/timetable/new">Manage Lecturers</Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Recent activity / notifications */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                No critical notifications. System running normally.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>System Info</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                MongoDB: connected • API: ok • Last import: 2 days ago
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

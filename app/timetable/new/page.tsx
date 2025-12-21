@@ -144,6 +144,16 @@ const NewTimetablePage = () => {
     },
   ])
 
+  const modules = ["", "Year 1 - Eng", "Year 2 - CS", "Year 3 - IT"]
+  const rooms = ["", "A101", "A102", "B201", "C301", "D401"]
+  const lecturers = [
+    "",
+    "Dr. A. Smith",
+    "Prof. B. Johnson",
+    "Dr. C. Lee",
+    "Prof. D. Brown",
+  ]
+
   const [saveState, setSaveState] = useState<{
     saving: boolean
     error?: string
@@ -291,59 +301,73 @@ const NewTimetablePage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold">New Timetable</h1>
-          <div className="flex items-center gap-3">
-            <Label>Session</Label>
-            <select
-              value={session}
-              onChange={(e) => setSession(e.target.value as SessionType)}
-              className="border rounded px-2 py-1"
-            >
-              <option value="day">Day (Morning & Afternoon)</option>
-              <option value="evening">Evening</option>
-              <option value="weekend">Weekend (Morning & Afternoon)</option>
-            </select>
+        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between mb-4">
+          <h1 className="text-xl md:text-2xl font-bold whitespace-nowrap my-5">
+            New Timetable
+          </h1>
+          <div className="flex flex-col lg:flex-row items-start gap-5">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <Label className="font-semibold text-lg">Session</Label>
+              <select
+                value={session}
+                onChange={(e) => setSession(e.target.value as SessionType)}
+                className="border rounded px-2 py-1"
+              >
+                <option value="day">Day (Morning & Afternoon)</option>
+                <option value="evening">Evening</option>
+                <option value="weekend">Weekend (Morning & Afternoon)</option>
+              </select>
+            </div>
 
-            <Label className="ml-4">Start</Label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setStartDate(e.target.value)
-              }
-            />
-            <Label className="ml-2">End</Label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setEndDate(e.target.value)
-              }
-            />
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <Label className="font-semibold text-lg">Start</Label>
+              <Input
+                type="date"
+                value={startDate}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setStartDate(e.target.value)
+                }
+              />
+            </div>
+
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+              <Label className="font-semibold text-lg">End</Label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setEndDate(e.target.value)
+                }
+              />
+            </div>
           </div>
         </div>
 
         <div className="space-y-4">
-          {schools.map((s) => (
-            <Card key={s.id} className="p-2">
-              <CardHeader className="flex items-center justify-between">
+          {schools.map((school) => (
+            <Card key={school.id} className="p-2">
+              <CardHeader className="flex flex-col-reverse lg:flex-row lg:items-center justify-between max-lg:gap-5">
                 <div className="flex items-center gap-3">
                   <Input
-                    value={s.schoolName}
-                    onChange={(e) => updateSchoolName(s.id, e.target.value)}
-                    className="w-64"
+                    value={school.schoolName}
+                    onChange={(e) =>
+                      updateSchoolName(school.id, e.target.value)
+                    }
+                    className="w-52 sm:w-80"
                   />
-                  <Badge>Modules: {s.modules.length}</Badge>
+                  <Badge>Modules: {school.modules.length}</Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={() => addModuleRow(s.id)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => addModuleRow(school.id)}
+                  >
                     Add Module
                   </Button>
                   <Button
                     variant="destructive"
-                    onClick={() => removeSchool(s.id)}
+                    onClick={() => removeSchool(school.id)}
                   >
                     Remove School
                   </Button>
@@ -352,32 +376,50 @@ const NewTimetablePage = () => {
 
               <CardContent>
                 <div className="space-y-3">
-                  {s.modules.map((m) => (
+                  {school.modules.map((m) => (
                     <Fragment key={m.id}>
                       <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
                         <div className="md:col-span-2">
-                          <Label>Module Title</Label>
-                          <Input
+                          <Label className="mx-1 my-2">Module Title</Label>
+                          {/* <Input
                             value={m.title}
                             onChange={(e) =>
                               updateModuleField(
-                                s.id,
+                                school.id,
                                 m.id,
                                 "title",
                                 e.target.value
                               )
                             }
-                          />
+                          /> */}
+                          <select
+                            value={session}
+                            onChange={(e) =>
+                              updateModuleField(
+                                school.id,
+                                m.id,
+                                "title",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-1"
+                          >
+                            {modules.map((module) => (
+                              <option key={module} value={module}>
+                                {module}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div>
-                          <Label>Start</Label>
+                          <Label className="mx-1 my-2">Start</Label>
                           <Input
                             type="time"
                             value={m.startTime}
                             onChange={(e) =>
                               updateModuleField(
-                                s.id,
+                                school.id,
                                 m.id,
                                 "startTime",
                                 e.target.value
@@ -387,13 +429,13 @@ const NewTimetablePage = () => {
                         </div>
 
                         <div>
-                          <Label>End</Label>
+                          <Label className="mx-1 my-2">End</Label>
                           <Input
                             type="time"
                             value={m.endTime}
                             onChange={(e) =>
                               updateModuleField(
-                                s.id,
+                                school.id,
                                 m.id,
                                 "endTime",
                                 e.target.value
@@ -403,39 +445,75 @@ const NewTimetablePage = () => {
                         </div>
 
                         <div>
-                          <Label>Venue</Label>
-                          <Input
+                          <Label className="mx-1 my-2">Venue</Label>
+                          {/* <Input
                             value={m.venue}
                             onChange={(e) =>
                               updateModuleField(
-                                s.id,
+                                school.id,
                                 m.id,
                                 "venue",
                                 e.target.value
                               )
                             }
-                          />
+                          /> */}
+                          <select
+                            value={rooms}
+                            onChange={(e) =>
+                              updateModuleField(
+                                school.id,
+                                m.id,
+                                "venue",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-1"
+                          >
+                            {rooms.map((room) => (
+                              <option key={room} value={room}>
+                                {room}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div>
-                          <Label>Lecturer</Label>
-                          <Input
+                          <Label className="mx-1 my-2">Lecturer</Label>
+                          {/* <Input
                             value={m.lecturer}
                             onChange={(e) =>
                               updateModuleField(
-                                s.id,
+                                school.id,
                                 m.id,
                                 "lecturer",
                                 e.target.value
                               )
                             }
-                          />
+                          /> */}
+                          <select
+                            value={lecturers}
+                            onChange={(e) =>
+                              updateModuleField(
+                                school.id,
+                                m.id,
+                                "lecturer",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded px-2 py-1"
+                          >
+                            {lecturers.map((lecturer) => (
+                              <option key={lecturer} value={lecturer}>
+                                {lecturer}
+                              </option>
+                            ))}
+                          </select>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Button
-                            variant="ghost"
-                            onClick={() => removeModuleRow(s.id, m.id)}
+                            variant="destructive"
+                            onClick={() => removeModuleRow(school.id, m.id)}
                           >
                             Delete
                           </Button>
