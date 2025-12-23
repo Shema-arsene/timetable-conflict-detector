@@ -1,4 +1,3 @@
-// import { AppLayout, AppHeader, AppFooter } from "./timetable_layout_and_header_responsive";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -71,9 +70,7 @@ const timetablePreview = [
 const HomePage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Use the layout wrapper from the layout file to keep header/footer consistent. */}
       <div className="max-w-7xl mx-auto p-4">
-        {/* Hero / summary */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-semibold">Dashboard</h2>
@@ -94,7 +91,9 @@ const HomePage = () => {
               <CardContent>
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">{s.label}</p>
+                    <p className="text-sm font-semibold text-gray-700">
+                      {s.label}
+                    </p>
                     <p className="text-2xl font-semibold mt-2">{s.value}</p>
                     {s.hint && (
                       <p className="text-xs text-gray-400 mt-1">{s.hint}</p>
@@ -114,14 +113,11 @@ const HomePage = () => {
         {/* Main grid: timetable preview + recent conflicts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="py-5 px-3">
               <CardHeader>
-                <CardTitle>
-                  {/* Timetable Preview  */}
-                  Recent Timetables
-                </CardTitle>
+                <CardTitle>Recent Timetables</CardTitle>
               </CardHeader>
-              <CardContent className="py-3 px-5">
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -166,11 +162,11 @@ const HomePage = () => {
           </div>
 
           <div>
-            <Card>
+            <Card className="py-5 px-3">
               <CardHeader>
                 <CardTitle>Recent Conflicts</CardTitle>
               </CardHeader>
-              <CardContent className="py-3 px-5">
+              <CardContent>
                 <div className="space-y-3">
                   {recentConflicts.map((c) => (
                     <div
@@ -210,7 +206,7 @@ const HomePage = () => {
               </CardContent>
             </Card>
 
-            <Card className="mt-6 p-3">
+            <Card className="mt-6 py-5 px-3">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
