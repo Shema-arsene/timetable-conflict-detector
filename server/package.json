@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "author": "shema-arsene",
+  "author": "Shema Arsene",
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon --exec ts-node-esm src/index.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
