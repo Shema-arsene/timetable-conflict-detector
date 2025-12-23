@@ -101,7 +101,9 @@ const HomePage = () => {
                     )}
                   </div>
                   <div>
-                    <Avatar className="w-10 h-10">{s.label.charAt(0)}</Avatar>
+                    <Avatar className="w-10 h-10 flex items-center justify-center border-2 border-gray-200 bg-gray-50">
+                      {s.label.charAt(0)}
+                    </Avatar>
                   </div>
                 </div>
               </CardContent>
@@ -214,10 +216,10 @@ const HomePage = () => {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <Button variant="outline">
-                  <Link href="/timetable/new">Manage Rooms</Link>
+                  <Link href="/rooms">Manage Rooms</Link>
                 </Button>
                 <Button variant="outline">
-                  <Link href="/timetable/new">Manage Lecturers</Link>
+                  <Link href="/lecturers">Manage Lecturers</Link>
                 </Button>
               </CardContent>
             </Card>
