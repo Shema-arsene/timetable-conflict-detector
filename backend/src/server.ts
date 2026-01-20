@@ -1,8 +1,8 @@
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
-import { connectDB } from "./config/db.ts"
-import router from "./routes/index.ts"
+import { connectDB } from "./config/db"
+import router from "./routes/index"
 
 // Load environment variables
 dotenv.config()
