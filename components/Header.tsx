@@ -33,6 +33,9 @@ const Header = () => {
           <Link href="/lecturers" className="text-gray-700 hover:text-black">
             Lecturers
           </Link>
+          <Link href="/modules" className="text-gray-700 hover:text-black">
+            Modules
+          </Link>
           <Link href="/auth/signin">
             <Button variant="default">Sign In</Button>
           </Link>
