@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js"
 import moduleRoutes from "./routes/module.routes.js"
 import lecturerRoutes from "./routes/lecturer.routes.js"
 import roomRoutes from "./routes/room.routes.js"
+import timetableRoutes from "./routes/timetable.routes.js"
 
 // Load environment variables
 dotenv.config()
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use("/api/modules", moduleRoutes)
 app.use("/api/lecturers", lecturerRoutes)
 app.use("/api/rooms", roomRoutes)
+app.use("/api/timetables", timetableRoutes)
 
 // Health check
 app.get("/api/health", (_req, res) => {

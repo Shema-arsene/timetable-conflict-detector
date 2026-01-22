@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, ChangeEvent, Fragment } from "react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Fragment, useState, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 
@@ -13,8 +13,8 @@ type SessionType = "day" | "evening" | "weekend"
 type ModuleRow = {
   id: string
   title: string
-  startTime: string // e.g. "08:30"
-  endTime: string // e.g. "12:00"
+  startTime: string
+  endTime: string
   venue: string
   lecturer: string
 }
@@ -25,14 +25,14 @@ type SchoolGroup = {
   modules: ModuleRow[]
 }
 
-type NewTimetable = {
+type NewTimetablePayload = {
   session: SessionType
-  startDate: string // yyyy-mm-dd
-  endDate: string // yyyy-mm-dd
+  startDate: string
+  endDate: string
   schools: SchoolGroup[]
 }
 
-// Utility helpers
+// Helpers
 const uid = (prefix = "id") =>
   `${prefix}_${Math.random().toString(36).slice(2, 9)}`
 
@@ -42,68 +42,56 @@ function timeToMinutes(t: string) {
   return h * 60 + m
 }
 
-// Conflict detection on the frontend (basic, mirrors backend rules)
+// Conflict Detection
 function detectConflictsFromGroups(schools: SchoolGroup[]) {
   const conflicts: string[] = []
 
-  // Room conflicts: same venue, overlapping times, same session (frontend knows session by page, we'll assume all here)
-  const roomIndex: { [key: string]: ModuleRow[] } = {}
-  const lecturerIndex: { [key: string]: ModuleRow[] } = {}
+  const roomIndex: Record<string, ModuleRow[]> = {}
+  const lecturerIndex: Record<string, ModuleRow[]> = {}
 
-  for (const school of schools) {
-    for (const mod of school.modules) {
-      if (!mod.venue) continue
-      const rKey = mod.venue.trim().toLowerCase()
-      if (!roomIndex[rKey]) roomIndex[rKey] = []
-      roomIndex[rKey].push(mod)
+  schools.forEach((school) => {
+    school.modules.forEach((m) => {
+      if (m.venue) {
+        const k = m.venue.toLowerCase()
+        roomIndex[k] = roomIndex[k] || []
+        roomIndex[k].push(m)
+      }
 
-      const lKey = mod.lecturer.trim().toLowerCase()
-      if (!lecturerIndex[lKey]) lecturerIndex[lKey] = []
-      lecturerIndex[lKey].push(mod)
-    }
-  }
+      if (m.lecturer) {
+        const k = m.lecturer.toLowerCase()
+        lecturerIndex[k] = lecturerIndex[k] || []
+        lecturerIndex[k].push(m)
+      }
+    })
+  })
 
-  // check overlaps in rooms
-  for (const [venue, mods] of Object.entries(roomIndex)) {
+  const checkOverlap = (a: ModuleRow, b: ModuleRow) =>
+    Math.max(timeToMinutes(a.startTime), timeToMinutes(b.startTime)) <
+    Math.min(timeToMinutes(a.endTime), timeToMinutes(b.endTime))
+
+  Object.entries(roomIndex).forEach(([room, mods]) => {
     for (let i = 0; i < mods.length; i++) {
       for (let j = i + 1; j < mods.length; j++) {
-        const a = mods[i]
-        const b = mods[j]
-        if (!a.startTime || !a.endTime || !b.startTime || !b.endTime) continue
-        const aStart = timeToMinutes(a.startTime)
-        const aEnd = timeToMinutes(a.endTime)
-        const bStart = timeToMinutes(b.startTime)
-        const bEnd = timeToMinutes(b.endTime)
-        const overlap = Math.max(aStart, bStart) < Math.min(aEnd, bEnd)
-        if (overlap) {
+        if (checkOverlap(mods[i], mods[j])) {
           conflicts.push(
-            `Room conflict: "${venue}" used by "${a.title}" and "${b.title}" with overlapping times.`
+            `Room conflict: "${room}" used by "${mods[i].title}" and "${mods[j].title}".`,
           )
         }
       }
     }
-  }
+  })
 
-  // check lecturer assigned to two different modules at overlapping time
-  for (const [lect, mods] of Object.entries(lecturerIndex)) {
+  Object.entries(lecturerIndex).forEach(([lect, mods]) => {
     for (let i = 0; i < mods.length; i++) {
       for (let j = i + 1; j < mods.length; j++) {
-        const a = mods[i]
-        const b = mods[j]
-        if (!a.startTime || !a.endTime || !b.startTime || !b.endTime) continue
-        const aStart = timeToMinutes(a.startTime)
-        const aEnd = timeToMinutes(a.endTime)
-        const bStart = timeToMinutes(b.startTime)
-        const bEnd = timeToMinutes(b.endTime)
-        const overlap = Math.max(aStart, bStart) < Math.min(aEnd, bEnd)
-        if (overlap) {
+        if (checkOverlap(mods[i], mods[j])) {
           conflicts.push(
-            `Lecturer conflict: "${a.lecturer}" assigned to "${a.title}" and "${b.title}" at overlapping times.`
+            `Lecturer conflict: "${lect}" assigned to overlapping modules.`,
           )
         }
       }
     }
-  }
+  })
 
   return conflicts
 }
@@ -111,23 +99,10 @@ function detectConflictsFromGroups(schools: SchoolGroup[]) {
 // Component
 const NewTimetablePage = () => {
   const [session, setSession] = useState<SessionType>("day")
-  const [startDate, setStartDate] = useState<string>("")
-  const [endDate, setEndDate] = useState<string>("")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
+
   const [schools, setSchools] = useState<SchoolGroup[]>([
-    {
-      id: uid("school"),
-      schoolName: "School of Business",
-      modules: [
-        {
-          id: uid("m"),
-          title: "",
-          startTime: "08:30",
-          endTime: "12:00",
-          venue: "",
-          lecturer: "",
-        },
-      ],
-    },
     {
       id: uid("school"),
       schoolName: "School of Computing",
@@ -144,16 +119,6 @@ const NewTimetablePage = () => {
     },
   ])
 
-  const modules = ["", "Year 1 - Eng", "Year 2 - CS", "Year 3 - IT"]
-  const rooms = ["", "A101", "A102", "B201", "C301", "D401"]
-  const lecturers = [
-    "",
-    "Dr. A. Smith",
-    "Prof. B. Johnson",
-    "Dr. C. Lee",
-    "Prof. D. Brown",
-  ]
-
   const [saveState, setSaveState] = useState<{
     saving: boolean
     error?: string
@@ -162,15 +127,22 @@ const NewTimetablePage = () => {
 
   const conflicts = detectConflictsFromGroups(schools)
 
-  function updateSchoolName(schoolId: string, name: string) {
-    setSchools((prev) =>
-      prev.map((s) => (s.id === schoolId ? { ...s, schoolName: name } : s))
-    )
-  }
+  /* ---------------- DATA ---------------- */
 
-  function addSchool() {
-    setSchools((prev) => [
-      ...prev,
+  const modules = ["", "Year 1", "Year 2", "Year 3"]
+  const rooms = ["", "A101", "A102", "B201", "C301"]
+  const lecturers = ["", "Dr. Smith", "Prof. Johnson", "Dr. Lee"]
+
+  // Mutators
+
+  const updateSchoolName = (id: string, name: string) =>
+    setSchools((s) =>
+      s.map((x) => (x.id === id ? { ...x, schoolName: name } : x)),
+    )
+
+  const addSchool = () =>
+    setSchools((s) => [
+      ...s,
       {
         id: uid("school"),
         schoolName: "New School",
@@ -186,20 +158,18 @@ const NewTimetablePage = () => {
         ],
       },
     ])
-  }
 
-  function removeSchool(schoolId: string) {
-    setSchools((prev) => prev.filter((s) => s.id !== schoolId))
-  }
+  const removeSchool = (id: string) =>
+    setSchools((s) => s.filter((x) => x.id !== id))
 
-  function addModuleRow(schoolId: string) {
-    setSchools((prev) =>
-      prev.map((s) =>
-        s.id === schoolId
+  const addModuleRow = (schoolId: string) =>
+    setSchools((s) =>
+      s.map((x) =>
+        x.id === schoolId
           ? {
-              ...s,
+              ...x,
               modules: [
-                ...s.modules,
+                ...x.modules,
                 {
                   id: uid("m"),
                   title: "",
@@ -210,61 +180,57 @@ const NewTimetablePage = () => {
                 },
               ],
             }
-          : s
-      )
+          : x,
+      ),
     )
-  }
 
-  function removeModuleRow(schoolId: string, moduleId: string) {
-    setSchools((prev) =>
-      prev.map((s) =>
-        s.id === schoolId
-          ? { ...s, modules: s.modules.filter((m) => m.id !== moduleId) }
-          : s
-      )
+  const removeModuleRow = (schoolId: string, moduleId: string) =>
+    setSchools((s) =>
+      s.map((x) =>
+        x.id === schoolId
+          ? { ...x, modules: x.modules.filter((m) => m.id !== moduleId) }
+          : x,
+      ),
     )
-  }
 
-  function updateModuleField(
+  const updateModuleField = (
     schoolId: string,
     moduleId: string,
     field: keyof ModuleRow,
-    value: string
-  ) {
-    setSchools((prev) =>
-      prev.map((s) => {
-        if (s.id !== schoolId) return s
-        return {
-          ...s,
-          modules: s.modules.map((m) =>
-            m.id === moduleId ? { ...m, [field]: value } : m
-          ),
-        }
-      })
+    value: string,
+  ) =>
+    setSchools((s) =>
+      s.map((x) =>
+        x.id === schoolId
+          ? {
+              ...x,
+              modules: x.modules.map((m) =>
+                m.id === moduleId ? { ...m, [field]: value } : m,
+              ),
+            }
+          : x,
+      ),
     )
-  }
+
+  // Save
 
   async function handleSave() {
-    // basic validation
     if (!startDate || !endDate) {
-      setSaveState({
-        saving: false,
-        error: "Please provide start and end dates.",
-      })
+      setSaveState({ saving: false, error: "Dates are required." })
       return
     }
 
-    if (new Date(startDate) > new Date(endDate)) {
+    if (conflicts.length) {
       setSaveState({
         saving: false,
-        error: "Start date cannot be after end date.",
+        error: "Resolve timetable conflicts first.",
       })
       return
     }
 
     setSaveState({ saving: true })
 
-    const payload: NewTimetable = {
+    const payload: NewTimetablePayload = {
       session,
       startDate,
       endDate,
@@ -272,31 +238,21 @@ const NewTimetablePage = () => {
     }
 
     try {
-      const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-        }/api/timetable`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      )
+      const res = await fetch("/api/timetable", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        setSaveState({
-          saving: false,
-          error: body?.message || `Save failed (${res.status})`,
-        })
-        return
-      }
+      if (!res.ok) throw new Error("Save failed")
 
       setSaveState({ saving: false, success: "Timetable saved successfully." })
     } catch (err: any) {
-      setSaveState({ saving: false, error: err.message || "Network error" })
+      setSaveState({ saving: false, error: err.message })
     }
   }
+
+  // UI
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -399,7 +355,7 @@ const NewTimetablePage = () => {
                                 school.id,
                                 m.id,
                                 "title",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             className="border rounded px-2 py-1"
@@ -422,7 +378,7 @@ const NewTimetablePage = () => {
                                 school.id,
                                 m.id,
                                 "startTime",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />
@@ -438,7 +394,7 @@ const NewTimetablePage = () => {
                                 school.id,
                                 m.id,
                                 "endTime",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           />
@@ -464,7 +420,7 @@ const NewTimetablePage = () => {
                                 school.id,
                                 m.id,
                                 "venue",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             className="border rounded px-2 py-1"
@@ -497,7 +453,7 @@ const NewTimetablePage = () => {
                                 school.id,
                                 m.id,
                                 "lecturer",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             className="border rounded px-2 py-1"
