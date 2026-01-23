@@ -33,23 +33,20 @@ const AddLecturerPage = () => {
     }
 
     try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`, 
-        form
-      )
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`, form)
 
       router.push("/lecturers")
     } catch (error) {
       console.error(error)
-       alert("Failed to create lecturer")
+      alert("Failed to create lecturer")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-xl">
-      <Card>
+    <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+      <Card className="p-3 md:p-6 w-full max-w-lg">
         <CardHeader>
           <CardTitle>Add Lecturer</CardTitle>
         </CardHeader>
@@ -60,6 +57,7 @@ const AddLecturerPage = () => {
               <Input
                 id="firstName"
                 name="firstName"
+                placeholder="John"
                 value={form.firstName}
                 onChange={handleChange}
                 required
@@ -71,6 +69,7 @@ const AddLecturerPage = () => {
               <Input
                 id="lastName"
                 name="lastName"
+                placeholder="Doe"
                 value={form.lastName}
                 onChange={handleChange}
                 required
@@ -83,6 +82,7 @@ const AddLecturerPage = () => {
                 id="email"
                 name="email"
                 type="email"
+                placeholder="example@gmail.com"
                 value={form.email}
                 onChange={handleChange}
               />
@@ -94,12 +94,13 @@ const AddLecturerPage = () => {
                 id="phone"
                 name="phone"
                 type="tel"
+                placeholder="+250780000000"
                 value={form.phone}
                 onChange={handleChange}
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex items-center justify-between gap-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
