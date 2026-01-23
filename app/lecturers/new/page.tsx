@@ -6,14 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import axios from "axios"
 
 const AddLecturerPage = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
-    campus: "",
+    phone: "",
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,21 +26,22 @@ const AddLecturerPage = () => {
     e.preventDefault()
     setLoading(true)
 
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        },
-      )
+    if (!form.firstName || !form.lastName || !form.email) {
+      alert("Please fill in all required fields.")
+      setLoading(false)
+      return
+    }
 
-      if (!res.ok) throw new Error("Failed to create lecturer")
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`, 
+        form
+      )
 
       router.push("/lecturers")
     } catch (error) {
       console.error(error)
+       alert("Failed to create lecturer")
     } finally {
       setLoading(false)
     }
@@ -53,11 +56,22 @@ const AddLecturerPage = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="firstName">First Name</Label>
               <Input
-                id="name"
-                name="name"
-                value={form.name}
+                id="firstName"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                name="lastName"
+                value={form.lastName}
                 onChange={handleChange}
                 required
               />
@@ -75,14 +89,13 @@ const AddLecturerPage = () => {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="campus">Campus</Label>
+              <Label htmlFor="phone">Phone number</Label>
               <Input
-                id="campus"
-                name="campus"
-                value={form.campus}
+                id="phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
                 onChange={handleChange}
-                placeholder="Kacyiru, Remera"
-                required
               />
             </div>
 

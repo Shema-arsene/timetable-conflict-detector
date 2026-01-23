@@ -34,13 +34,8 @@ const LecturerSchema = new Schema<ILecturer>(
       required: false,
       trim: true,
     },
-    campus: {
-      type: String,
-      required: true,
-      enum: ["Kacyiru", "Remera"], // later we can replace with constants
-    },
   },
-  { timestamps: true }
+  { timestamps: true },
 )
 
 export default mongoose.model<ILecturer>("Lecturer", LecturerSchema)

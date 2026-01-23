@@ -4,25 +4,34 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Lecturer } from "../../types/lecturer"
+import axios from "axios"
 
-// Types
-interface Lecturer {
-  _id: string
-  name: string
-  email?: string
-  campus: string
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const LecturersPage = () => {
   const [lecturers, setLecturers] = useState<Lecturer[]>([])
   const [loading, setLoading] = useState(true)
 
+  const fetchAllLecturers = async (): Promise<void> => {
+    try {
+      setLoading(true)
+
+      const res = await axios.get<Lecturer[]>(`${API_URL}/api/lecturers`)
+
+      const data: Lecturer[] = res.data
+
+      setLecturers(data)
+    } catch (error) {
+      console.error("Error fetching lecturers:", error)
+      setLecturers([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`)
-      .then((res) => res.json())
-      .then((data) => setLecturers(data))
-      .catch(() => setLecturers([]))
-      .finally(() => setLoading(false))
+    fetchAllLecturers()
   }, [])
 
   return (
@@ -35,7 +44,7 @@ const LecturersPage = () => {
           </Link>
         </div>
 
-        <Card>
+        <Card className="p-3 md:p-6">
           <CardHeader>
             <CardTitle>All Lecturers</CardTitle>
           </CardHeader>
@@ -46,25 +55,31 @@ const LecturersPage = () => {
             ) : lecturers.length === 0 ? (
               <p className="text-sm text-gray-500">No lecturers found.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto p-1 md:p-3">
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-2">Name</th>
                       <th className="text-left py-2">Email</th>
-                      <th className="text-left py-2">Campus</th>
+                      <th className="text-left py-2">Phone</th>
                       <th className="text-right py-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lecturers.map((lecturer) => (
                       <tr key={lecturer._id} className="border-b last:border-0">
-                        <td className="py-2 font-medium">{lecturer.name}</td>
-                        <td className="py-2">{lecturer.email || "—"}</td>
-                        <td className="py-2">{lecturer.campus}</td>
-                        <td className="py-2 text-right">
-                          <Link href={`/lecturers/${lecturer._id}/edit`}>
-                            <Button variant="outline" size="sm">
+                        <td className="py-2 font-medium whitespace-nowrap pr-2">
+                          {lecturer.firstName} {lecturer.lastName}
+                        </td>
+                        <td className="py-2 whitespace-nowrap px-2">
+                          {lecturer.email}
+                        </td>
+                        <td className="py-2 whitespace-nowrap px-2">
+                          {lecturer.phone}
+                        </td>
+                        <td className="py-2 text-right whitespace-nowrap pl-2">
+                          <Link href={`/lecturers/${lecturer._id}`}>
+                            <Button variant="secondary" size="sm">
                               Edit
                             </Button>
                           </Link>

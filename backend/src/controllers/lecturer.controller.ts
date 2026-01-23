@@ -18,9 +18,9 @@ export const getLecturerById = async (req: Request, res: Response) => {
 
 // POST /api/lecturers
 export const createLecturer = async (req: Request, res: Response) => {
-  const { firstName, lastName, email, phone, campus } = req.body
+  const { firstName, lastName, email, phone } = req.body
 
-  if (!firstName || !lastName || !email || !campus) {
+  if (!firstName || !lastName || !email) {
     return res
       .status(400)
       .json({ message: "All required fields must be filled" })
@@ -36,7 +36,6 @@ export const createLecturer = async (req: Request, res: Response) => {
     lastName,
     email,
     phone,
-    campus,
   })
   res.status(201).json(lecturer)
 }
