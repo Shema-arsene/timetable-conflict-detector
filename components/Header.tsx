@@ -123,6 +123,13 @@ const Header = () => {
             >
               Lecturers
             </Link>
+            <Link
+              href="/modules"
+              onClick={() => setOpen(false)}
+              className="py-2 px-2 rounded hover:bg-gray-100"
+            >
+              Modules
+            </Link>
             {/* signin button */}
             <div className="flex items-center justify-center">
               <Link
