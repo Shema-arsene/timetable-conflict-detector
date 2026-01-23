@@ -76,8 +76,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
 import Link from "next/link"
+import axios from "axios"
 
 import {
   Table,
@@ -121,7 +121,7 @@ export default function RoomsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <Card className="max-w-6xl mx-auto">
+      <Card className="max-w-6xl mx-auto p-3 md:p-6">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl">Rooms</CardTitle>
           <Link href="/rooms/new">
@@ -154,11 +154,11 @@ export default function RoomsPage() {
               <TableBody>
                 {rooms.map((room) => (
                   <TableRow key={room._id}>
-                    <TableCell>{room.name}</TableCell>
+                    <TableCell className="font-semibold">{room.name}</TableCell>
                     <TableCell>{room.campus}</TableCell>
                     <TableCell>{room.capacity}</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/rooms/edit/${room._id}`}>
+                      <Link href={`/rooms/${room._id}`}>
                         <Button size="sm" variant="outline">
                           Edit
                         </Button>

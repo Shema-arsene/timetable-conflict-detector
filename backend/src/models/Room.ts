@@ -19,9 +19,11 @@ const RoomSchema = new Schema<IRoom>(
       type: String,
       required: true,
       trim: true,
+      enum: ["Kacyiru", "Remera"],
     },
     capacity: {
       type: Number,
+      default: 1,
       min: 1,
     },
   },

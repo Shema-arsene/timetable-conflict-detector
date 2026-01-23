@@ -8,12 +8,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { ArrowLeft } from "lucide-react"
 
 type RoomForm = {
   name: string
   campus: string
   capacity: number
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const EditRoomPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -27,6 +30,7 @@ const EditRoomPage = () => {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -76,6 +80,26 @@ const EditRoomPage = () => {
     }
   }
 
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this lecturer? This action cannot be undone.",
+    )
+
+    if (!confirmed) return
+
+    setDeleting(true)
+
+    try {
+      await axios.delete(`${API_URL}/api/rooms/${id}`)
+      router.push("/rooms")
+    } catch (error) {
+      console.error("Failed to delete Room", error)
+      alert("Failed to delete Room")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -86,8 +110,17 @@ const EditRoomPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
+      <Card className="w-full max-w-lg p-3 md:p-6 py-6">
+        <div>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => router.push("/rooms")}
+          >
+            <ArrowLeft />
+          </Button>
+        </div>
+        <CardHeader className="">
           <CardTitle>Edit Room</CardTitle>
         </CardHeader>
 
@@ -130,17 +163,17 @@ const EditRoomPage = () => {
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <div className="flex gap-2 pt-2">
-              <Button type="submit" disabled={saving}>
-                {saving ? "Saving..." : "Update Room"}
-              </Button>
-
+            <div className="flex items-center justify-between gap-2 pt-2">
               <Button
                 type="button"
-                variant="outline"
-                onClick={() => router.push("/rooms")}
+                variant="destructive"
+                disabled={deleting}
+                onClick={handleDelete}
               >
-                Cancel
+                {deleting ? "Deleting…" : "Delete Room"}
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? "Saving..." : "Update Room"}
               </Button>
             </div>
           </form>
