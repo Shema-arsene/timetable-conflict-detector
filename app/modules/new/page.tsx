@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,29 +14,43 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const CAMPUSES = ["Kacyiru", "Remera"] as const
+import axios from "axios"
+
+interface School {
+  _id: string
+  name: string
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const CreateModulePage = () => {
   const router = useRouter()
   const [code, setCode] = useState("")
   const [name, setName] = useState("")
-  const [campus, setCampus] = useState<(typeof CAMPUSES)[number] | "">("")
+  const [schools, setSchools] = useState<School[]>([])
+  const [school, setSchool] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const fetchSchools = async () => {
+    axios.get(`${API_URL}/api/schools`).then((res) => setSchools(res.data))
+  }
+
+  useEffect(() => {
+    fetchSchools()
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
-    if (!code || !name || !campus) return
+    if (!code || !name || !school) return
 
     try {
       setLoading(true)
-      const res = await fetch("/api/modules", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, name, campus }),
+      const res = await axios.post(`${API_URL}/api/modules`, {
+        code,
+        name,
+        school,
       })
-
-      if (!res.ok) throw new Error("Failed to create module")
 
       router.push("/modules")
     } catch (error) {
@@ -48,7 +62,7 @@ const CreateModulePage = () => {
 
   return (
     <section className="min-h-screen p-6 max-w-xl">
-      <Card>
+      <Card className="p-3 md:p-6">
         <CardHeader>
           <CardTitle>Create Module</CardTitle>
         </CardHeader>
@@ -77,25 +91,29 @@ const CreateModulePage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Campus</Label>
-              <Select
-                value={campus}
-                onValueChange={(value) => setCampus(value as any)}
-              >
+              <Label>School</Label>
+              <Select value={school} onValueChange={setSchool}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select campus" />
+                  <SelectValue placeholder="Select school" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CAMPUSES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
+                  {schools.map((s) => (
+                    <SelectItem key={s._id} value={s._id}>
+                      {s.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? "Saving..." : "Create Module"}
               </Button>

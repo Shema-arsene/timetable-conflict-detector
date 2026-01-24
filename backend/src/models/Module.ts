@@ -19,7 +19,6 @@ const ModuleSchema = new Schema<IModule>(
     code: {
       type: String,
       required: true,
-      unique: true,
       uppercase: true,
       trim: true,
     },
@@ -31,5 +30,7 @@ const ModuleSchema = new Schema<IModule>(
   },
   { timestamps: true },
 )
+
+ModuleSchema.index({ code: 1, school: 1 }, { unique: true })
 
 export default mongoose.model<IModule>("Module", ModuleSchema)

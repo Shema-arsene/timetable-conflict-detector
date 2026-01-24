@@ -6,17 +6,23 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { ArrowLeft } from "lucide-react"
 // import { useToast } from "@/components/ui/use-toast"
 
-const CAMPUSES = ["Kacyiru", "Remera"] as const
+import axios from "axios"
 
-type Campus = (typeof CAMPUSES)[number]
+interface School {
+  _id: string
+  name: string
+}
 
 interface ModuleForm {
   code: string
   name: string
-  campus: Campus
+  school: string
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const EditModulePage = () => {
   const { id } = useParams<{ id: string }>()
@@ -26,41 +32,50 @@ const EditModulePage = () => {
   const [form, setForm] = useState<ModuleForm>({
     code: "",
     name: "",
-    campus: "Kacyiru",
+    school: "",
   })
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [schools, setSchools] = useState<School[]>([])
+  const [deleting, setDeleting] = useState(false)
+
+  const fetchSchools = async () => {
+    const { data } = await axios.get(`${API_URL}/api/schools`)
+    setSchools(data)
+  }
+
+  const fetchModule = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/api/modules/${id}`)
+      const data = await res.data
+
+      setForm({
+        code: data.code,
+        name: data.name,
+        school: data.school._id,
+      })
+    } catch (error) {
+      // toast({
+      //   title: "Error",
+      //   description: "Could not load module",
+      //   variant: "destructive",
+      // })
+      console.error(error)
+      router.push("/modules")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fetch schools for select dropdown
+  useEffect(() => {
+    fetchSchools()
+  }, [])
 
   // Fetch existing module
   useEffect(() => {
-    async function fetchModule() {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/modules/${id}`,
-        )
-        if (!res.ok) throw new Error("Failed to fetch module")
-        const data = await res.json()
-
-        setForm({
-          code: data.code,
-          name: data.name,
-          campus: data.campus,
-        })
-      } catch (err) {
-        // toast({
-        //   title: "Error",
-        //   description: "Could not load module",
-        //   variant: "destructive",
-        // })
-        router.push("/modules")
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchModule()
-    //   }, [id, router, toast])
   }, [id, router])
 
   function updateField<K extends keyof ModuleForm>(
@@ -70,8 +85,8 @@ const EditModulePage = () => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  async function handleUpdate() {
-    if (!form.code || !form.name) {
+  const handleUpdate = async () => {
+    if (!form.code || !form.name || !form.school) {
       //   toast({
       //     title: "Validation error",
       //     description: "All fields are required",
@@ -80,19 +95,14 @@ const EditModulePage = () => {
       return
     }
 
-    setSaving(true)
-
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/modules/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        },
-      )
+      setSaving(true)
 
-      if (!res.ok) throw new Error("Update failed")
+      await axios.put(`${API_URL}/api/modules/${id}`, {
+        code: form.code,
+        name: form.name,
+        school: form.school,
+      })
 
       //   toast({
       //     title: "Module updated",
@@ -100,14 +110,33 @@ const EditModulePage = () => {
       //   })
 
       router.push("/modules")
-    } catch (err) {
+    } catch (error) {
       //   toast({
       //     title: "Error",
       //     description: "Failed to update module",
       //     variant: "destructive",
       //   })
+      console.error("Failed to update module:", error)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this module? This action cannot be undone.",
+    )
+
+    if (!confirmed) return
+
+    try {
+      setDeleting(true)
+      await axios.delete(`${API_URL}/api/modules/${id}`)
+      router.push("/modules")
+    } catch (error) {
+      console.error("Failed to delete module:", error)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -117,7 +146,12 @@ const EditModulePage = () => {
 
   return (
     <section className="min-h-screen p-6 max-w-3xl mx-auto">
-      <Card>
+      <Card className="p-3 md:p-6">
+        <div>
+          <Button variant="ghost" onClick={() => router.push("/modules")}>
+            <ArrowLeft />
+          </Button>
+        </div>
         <CardHeader>
           <CardTitle>Edit Module</CardTitle>
         </CardHeader>
@@ -138,25 +172,33 @@ const EditModulePage = () => {
             />
           </div>
 
-          <div>
-            <Label>Campus</Label>
+          <div className="space-y-2">
+            <Label>School</Label>
             <select
-              value={form.campus}
-              onChange={(e) => updateField("campus", e.target.value as Campus)}
+              value={form.school}
+              onChange={(e) => updateField("school", e.target.value)}
               className="w-full border rounded px-3 py-2"
             >
-              {CAMPUSES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              <option value="" disabled>
+                Select school
+              </option>
+              {schools.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => router.push("/modules")}>
-              Cancel
+          <div className="flex items-center justify-between gap-2 pt-4">
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Module"}
             </Button>
+
             <Button onClick={handleUpdate} disabled={saving}>
               {saving ? "Saving..." : "Save Changes"}
             </Button>
