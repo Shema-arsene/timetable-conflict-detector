@@ -33,6 +33,9 @@ const Header = () => {
           <Link href="/lecturers" className="text-gray-700 hover:text-black">
             Lecturers
           </Link>
+          <Link href="/schools" className="text-gray-700 hover:text-black">
+            Schools
+          </Link>
           <Link href="/modules" className="text-gray-700 hover:text-black">
             Modules
           </Link>
@@ -122,6 +125,13 @@ const Header = () => {
               className="py-2 px-2 rounded hover:bg-gray-100"
             >
               Lecturers
+            </Link>
+            <Link
+              href="/schools"
+              onClick={() => setOpen(false)}
+              className="py-2 px-2 rounded hover:bg-gray-100"
+            >
+              Schools
             </Link>
             <Link
               href="/modules"

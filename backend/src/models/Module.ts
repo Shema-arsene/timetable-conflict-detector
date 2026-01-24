@@ -1,9 +1,10 @@
-import mongoose, { Schema, Document } from "mongoose"
+import mongoose, { Schema, Document, Types } from "mongoose"
 
 export interface IModule extends Document {
   name: string
   code: string
-  campus: string
+  campus: "Kacyiru" | "Remera"
+  school: Types.ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -22,10 +23,10 @@ const ModuleSchema = new Schema<IModule>(
       uppercase: true,
       trim: true,
     },
-    campus: {
-      type: String,
+    school: {
+      type: Schema.Types.ObjectId,
+      ref: "School",
       required: true,
-      enum: ["Kacyiru", "Remera"],
     },
   },
   { timestamps: true },
