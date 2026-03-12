@@ -9,6 +9,15 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
+import { CAMPUSES } from "@/constants/campus"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 type RoomPayload = {
   name: string
   campus: string
@@ -33,6 +42,10 @@ const AddRoomPage = () => {
       ...prev,
       [name]: name === "capacity" ? Number(value) : value,
     }))
+  }
+
+  const handleCampusChange = (value: string) => {
+    setForm((prev) => ({ ...prev, campus: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,7 +86,7 @@ const AddRoomPage = () => {
             </div>
 
             {/* Campus */}
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <Label htmlFor="campus">Campus</Label>
               <Input
                 id="campus"
@@ -83,6 +96,26 @@ const AddRoomPage = () => {
                 onChange={handleChange}
                 required
               />
+            </div> */}
+
+            <div className="space-y-1">
+              <Label htmlFor="campus">Campus</Label>
+              <Select
+                value={form.campus}
+                onValueChange={handleCampusChange}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a campus" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CAMPUSES.map((campus) => (
+                    <SelectItem key={campus} value={campus}>
+                      {campus}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Capacity */}
