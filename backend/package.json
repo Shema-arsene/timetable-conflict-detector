@@ -1,7 +1,7 @@
 {
-  "name": "university-timetable-conflict-detector",
+  "name": "university-timetable-conflict-detector-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "System to build University Of Kigali timetables using Node.js, Express, and MongoDB.",
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
