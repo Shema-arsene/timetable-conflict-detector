@@ -26,7 +26,7 @@ export const getModuleById = async (req: Request, res: Response) => {
   res.json(module)
 }
 
-// GET /api/modules/:id
+// GET /api/modules/school/:id
 export const getModulesBySchool = async (req: Request, res: Response) => {
   const modules = await Module.find({
     school: req.params.schoolId,
