@@ -4,6 +4,7 @@ import "./globals.css"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Toaster } from "sonner"
+import Head from "next/head"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,6 +20,11 @@ export const metadata: Metadata = {
   title: "Timetable Conflict detector",
   description:
     "Create and manage university timetables with conflict detection.",
+  icons: {
+    icon: "/assets/Timetable-conflict-detector.png",
+    shortcut: "/assets/Timetable-conflict-detector.png",
+    apple: "/assets/Timetable-conflict-detector.png",
+  },
 }
 
 export default function RootLayout({
