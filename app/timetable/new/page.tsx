@@ -1,35 +1,50 @@
 "use client"
 
-import { Fragment, useState, ChangeEvent } from "react"
+import { Fragment, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import axios from "axios"
+import { CAMPUSES } from "@/constants/campus"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { validateTimetableDates } from "@/lib/dateValidation"
 
 // Types
 type SessionType = "day" | "evening" | "weekend"
 
 type ModuleRow = {
   id: string
-  title: string
+  moduleId: string
   startTime: string
   endTime: string
-  venue: string
-  lecturer: string
+  roomId: string
+  lecturerId: string
+  campus: "Kacyiru" | "Remera"
 }
 
 type SchoolGroup = {
   id: string
-  schoolName: string
+  schoolId: string
   modules: ModuleRow[]
 }
 
-type NewTimetablePayload = {
+type CreateTimetablePayload = {
+  title: string
   session: SessionType
   startDate: string
   endDate: string
-  schools: SchoolGroup[]
+  entries: {
+    schoolId: string
+    moduleId: string
+    lecturerId: string
+    roomId: string
+    campus: "Kacyiru" | "Remera"
+    startTime: string
+    endTime: string
+  }[]
 }
 
 // Helpers
@@ -42,23 +57,40 @@ function timeToMinutes(t: string) {
   return h * 60 + m
 }
 
-// Conflict Detection
-function detectConflictsFromGroups(schools: SchoolGroup[]) {
-  const conflicts: string[] = []
+function isStartTimeInFuture(startDate: string, startTime: string) {
+  if (!startDate || !startTime) return true
+  const start = new Date(`${startDate}T${startTime}`)
+  const now = new Date()
+  return start.getTime() > now.getTime()
+}
 
+// Conflict Detection
+function detectConflictsFromGroups(
+  schools: SchoolGroup[],
+  modulesList: any[],
+  roomsList: any[],
+  lecturersList: any[],
+) {
+  const conflicts: string[] = []
   const roomIndex: Record<string, ModuleRow[]> = {}
   const lecturerIndex: Record<string, ModuleRow[]> = {}
 
   schools.forEach((school) => {
     school.modules.forEach((m) => {
-      if (m.venue) {
-        const k = m.venue.toLowerCase()
+      const roomName = roomsList.find((r) => r._id === m.roomId)?.name
+      const lecturerName =
+        lecturersList.find((l) => l._id === m.lecturerId)?.firstName +
+        " " +
+        lecturersList.find((l) => l._id === m.lecturerId)?.lastName
+
+      if (roomName) {
+        const k = roomName.toLowerCase()
         roomIndex[k] = roomIndex[k] || []
         roomIndex[k].push(m)
       }
 
-      if (m.lecturer) {
-        const k = m.lecturer.toLowerCase()
+      if (lecturerName) {
+        const k = lecturerName.toLowerCase()
         lecturerIndex[k] = lecturerIndex[k] || []
         lecturerIndex[k].push(m)
       }
@@ -74,7 +106,7 @@ function detectConflictsFromGroups(schools: SchoolGroup[]) {
       for (let j = i + 1; j < mods.length; j++) {
         if (checkOverlap(mods[i], mods[j])) {
           conflicts.push(
-            `Room conflict: "${room}" used by "${mods[i].title}" and "${mods[j].title}".`,
+            `Room conflict: "${room}" used by overlapping modules.`,
           )
         }
       }
@@ -96,48 +128,71 @@ function detectConflictsFromGroups(schools: SchoolGroup[]) {
   return conflicts
 }
 
-// Component
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
 const NewTimetablePage = () => {
+  const router = useRouter()
+
+  // API data
+  const [schoolsList, setSchoolsList] = useState<any[]>([])
+  const [modulesList, setModulesList] = useState<any[]>([])
+  const [roomsList, setRoomsList] = useState<any[]>([])
+  const [lecturersList, setLecturersList] = useState<any[]>([])
+  const [timetableHeading, setTimetableHeading] = useState("")
+
+  useEffect(() => {
+    Promise.all([
+      axios.get(`${API_URL}/api/schools`),
+      axios.get(`${API_URL}/api/modules`),
+      axios.get(`${API_URL}/api/rooms`),
+      axios.get(`${API_URL}/api/lecturers`),
+    ]).then(([schools, modules, rooms, lecturers]) => {
+      setSchoolsList(schools.data)
+      setModulesList(modules.data)
+      setRoomsList(rooms.data)
+      setLecturersList(lecturers.data)
+    })
+  }, [])
+
+  // Local state
   const [session, setSession] = useState<SessionType>("day")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
-
   const [schools, setSchools] = useState<SchoolGroup[]>([
     {
       id: uid("school"),
-      schoolName: "School of Computing",
+      schoolId: "",
       modules: [
         {
           id: uid("m"),
-          title: "",
-          startTime: "08:30",
-          endTime: "12:00",
-          venue: "",
-          lecturer: "",
+          moduleId: "",
+          startTime: "00:00", // Changed to 00:00
+          endTime: "00:00", // Changed to 00:00
+          roomId: "",
+          lecturerId: "",
+          campus: "Kacyiru",
         },
       ],
     },
   ])
 
-  const [saveState, setSaveState] = useState<{
-    saving: boolean
-    error?: string
-    success?: string
-  }>({ saving: false })
+  const [saving, setSaving] = useState(false)
 
-  const conflicts = detectConflictsFromGroups(schools)
-
-  /* ---------------- DATA ---------------- */
-
-  const modules = ["", "Year 1", "Year 2", "Year 3"]
-  const rooms = ["", "A101", "A102", "B201", "C301"]
-  const lecturers = ["", "Dr. Smith", "Prof. Johnson", "Dr. Lee"]
+  const conflicts = detectConflictsFromGroups(
+    schools,
+    modulesList,
+    roomsList,
+    lecturersList,
+  )
 
   // Mutators
-
-  const updateSchoolName = (id: string, name: string) =>
+  const updateSchoolField = (
+    id: string,
+    field: keyof SchoolGroup,
+    value: string,
+  ) =>
     setSchools((s) =>
-      s.map((x) => (x.id === id ? { ...x, schoolName: name } : x)),
+      s.map((sch) => (sch.id === id ? { ...sch, [field]: value } : sch)),
     )
 
   const addSchool = () =>
@@ -145,51 +200,53 @@ const NewTimetablePage = () => {
       ...s,
       {
         id: uid("school"),
-        schoolName: "New School",
+        schoolId: "",
         modules: [
           {
             id: uid("m"),
-            title: "",
-            startTime: "08:30",
-            endTime: "12:00",
-            venue: "",
-            lecturer: "",
+            moduleId: "",
+            startTime: "00:00", // Changed to 00:00
+            endTime: "00:00", // Changed to 00:00
+            roomId: "",
+            lecturerId: "",
+            campus: "Kacyiru",
           },
         ],
       },
     ])
 
   const removeSchool = (id: string) =>
-    setSchools((s) => s.filter((x) => x.id !== id))
+    setSchools((s) => s.filter((sch) => sch.id !== id))
 
   const addModuleRow = (schoolId: string) =>
     setSchools((s) =>
-      s.map((x) =>
-        x.id === schoolId
+      s.map((sch) =>
+        sch.id === schoolId
           ? {
-              ...x,
+              ...sch,
               modules: [
-                ...x.modules,
+                ...sch.modules,
                 {
                   id: uid("m"),
-                  title: "",
-                  startTime: "08:30",
-                  endTime: "12:00",
-                  venue: "",
-                  lecturer: "",
+                  moduleId: "",
+                  startTime: "00:00",
+                  endTime: "00:00",
+                  roomId: "",
+                  lecturerId: "",
+                  campus: "Kacyiru",
                 },
               ],
             }
-          : x,
+          : sch,
       ),
     )
 
   const removeModuleRow = (schoolId: string, moduleId: string) =>
     setSchools((s) =>
-      s.map((x) =>
-        x.id === schoolId
-          ? { ...x, modules: x.modules.filter((m) => m.id !== moduleId) }
-          : x,
+      s.map((sch) =>
+        sch.id === schoolId
+          ? { ...sch, modules: sch.modules.filter((m) => m.id !== moduleId) }
+          : sch,
       ),
     )
 
@@ -200,338 +257,454 @@ const NewTimetablePage = () => {
     value: string,
   ) =>
     setSchools((s) =>
-      s.map((x) =>
-        x.id === schoolId
+      s.map((sch) =>
+        sch.id === schoolId
           ? {
-              ...x,
-              modules: x.modules.map((m) =>
+              ...sch,
+              modules: sch.modules.map((m) =>
                 m.id === moduleId ? { ...m, [field]: value } : m,
               ),
             }
-          : x,
+          : sch,
       ),
     )
 
-  // Save
+  const hasPastStartTime = schools.some((school) =>
+    school.modules.some(
+      (m) =>
+        m.startTime &&
+        m.startTime !== "00:00" &&
+        !isStartTimeInFuture(startDate, m.startTime),
+    ),
+  )
 
-  async function handleSave() {
+  useEffect(() => {
+    if (hasPastStartTime) {
+      toast.error("Error creating timetable", {
+        description: "One or more modules start in the past.",
+      })
+
+      setSaving(false)
+    }
+  }, [hasPastStartTime])
+
+  const handleSave = async () => {
     if (!startDate || !endDate) {
-      setSaveState({ saving: false, error: "Dates are required." })
+      toast.error("Error creating timetable", {
+        description: "Start and end dates are required.",
+      })
+      setSaving(false)
+      return
+    }
+
+    const dateValidation = validateTimetableDates(startDate, endDate)
+    if (!dateValidation.valid) {
+      toast.error("Error creating timetable", {
+        description: dateValidation.message!,
+      })
+      setSaving(false)
+      return
+    }
+
+    if (!timetableHeading || timetableHeading.trim() === "") {
+      toast.error("Error creating timetable", {
+        description: "Timetable title is required.",
+      })
+      setSaving(false)
       return
     }
 
     if (conflicts.length) {
-      setSaveState({
-        saving: false,
-        error: "Resolve timetable conflicts first.",
+      toast.error("Error creating timetable", {
+        description: "Please resolve all conflicts before saving.",
       })
+      setSaving(false)
       return
     }
 
-    setSaveState({ saving: true })
+    setSaving(true) // Do I need this state?
 
-    const payload: NewTimetablePayload = {
+    // Transforming nested schools into flat entries array
+    const entries = schools.flatMap((school) =>
+      school.modules.map((module) => ({
+        schoolId: school.schoolId,
+        moduleId: module.moduleId,
+        lecturerId: module.lecturerId,
+        roomId: module.roomId,
+        campus: module.campus,
+        startTime: module.startTime,
+        endTime: module.endTime,
+      })),
+    )
+
+    // Filter out any incomplete entries (ignore entries with default 00:00 times if other fields are empty)
+    const validEntries = entries.filter((entry) => {
+      // Check if this is a real entry (not just a placeholder)
+      const hasRequiredFields =
+        entry.schoolId &&
+        entry.schoolId.trim() !== "" &&
+        entry.moduleId &&
+        entry.moduleId.trim() !== "" &&
+        entry.lecturerId &&
+        entry.lecturerId.trim() !== "" &&
+        entry.roomId &&
+        entry.roomId.trim() !== ""
+
+      // Also check if times are set (not both 00:00)
+      const hasValidTimes =
+        entry.startTime !== "00:00" || entry.endTime !== "00:00"
+
+      return hasRequiredFields && hasValidTimes
+    })
+
+    if (validEntries.length === 0) {
+      toast.error("Error creating the timetable.", {
+        description:
+          "Please select a school, module, lecturer, room, and set valid times for at least one entry.",
+      })
+      setSaving(false)
+      return
+    }
+
+    const payload = {
+      title: timetableHeading,
       session,
       startDate,
       endDate,
-      schools,
+      entries: validEntries,
     }
 
     try {
-      const res = await fetch("/api/timetable", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-
-      if (!res.ok) throw new Error("Save failed")
-
-      setSaveState({ saving: false, success: "Timetable saved successfully." })
+      const res = await axios.post(`${API_URL}/api/timetables`, payload)
+      toast.success("Yaay!", { description: "Timetable created successfully!" })
+      setTimeout(() => router.push("/timetable"), 3000)
     } catch (err: any) {
-      setSaveState({ saving: false, error: err.message })
+      console.error("Save error:", err.response?.data || err.message)
+      toast.error("Error creating timetable", {
+        description:
+          err.response?.data?.message || "Failed to create timetable",
+      })
+      setSaving(false)
     }
   }
 
-  // UI
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between mb-4">
-          <h1 className="text-xl md:text-2xl font-bold whitespace-nowrap my-5">
-            New Timetable
-          </h1>
-          <div className="flex flex-col lg:flex-row items-start gap-5">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <Label className="font-semibold text-lg">Session</Label>
-              <select
-                value={session}
-                onChange={(e) => setSession(e.target.value as SessionType)}
-                className="border rounded px-2 py-1"
-              >
-                <option value="day">Day (Morning & Afternoon)</option>
-                <option value="evening">Evening</option>
-                <option value="weekend">Weekend (Morning & Afternoon)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <Label className="font-semibold text-lg">Start</Label>
+      <h1 className="mb-5 text-xl md:text-2xl font-bold">
+        Create a New Timetable
+      </h1>
+      <Card className="p-3 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col items-start mb-4">
+            <div className="w-full text-xl md:text-2xl font-semibold my-5 uppercase">
               <Input
-                type="date"
-                value={startDate}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setStartDate(e.target.value)
-                }
+                type="text"
+                value={timetableHeading}
+                onChange={(e) => setTimetableHeading(e.target.value)}
+                placeholder="Timetable Title - Module One Teaching Timetable Extract SEPT 2026 - DEC 2026"
+                className="w-full"
               />
             </div>
+            <div className="flex flex-col lg:flex-row items-start gap-5">
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                <Label className="font-semibold text-lg">Session</Label>
+                <select
+                  value={session}
+                  onChange={(e) => setSession(e.target.value as SessionType)}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value="day">Day (Morning & Afternoon)</option>
+                  <option value="evening">Evening</option>
+                  <option value="weekend">Weekend (Morning & Afternoon)</option>
+                </select>
+              </div>
 
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-              <Label className="font-semibold text-lg">End</Label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEndDate(e.target.value)
-                }
-              />
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                <Label className="font-semibold text-lg">Start</Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                <Label className="font-semibold text-lg">End</Label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+
+              {startDate && endDate && (
+                <div className="flex items-center gap-2 my-2">
+                  <Badge
+                    variant="outline"
+                    className={`
+                        ${(() => {
+                          const diffDays = Math.ceil(
+                            (new Date(endDate).getTime() -
+                              new Date(startDate).getTime()) /
+                              (1000 * 60 * 60 * 24),
+                          )
+                          const weeks = diffDays / 7
+                          if (weeks >= 3 && weeks <= 4)
+                            return "bg-green-100 text-green-800"
+                          if (weeks < 3) return "bg-yellow-100 text-yellow-800"
+                          return "bg-red-100 text-red-800"
+                        })()}`}
+                  >
+                    {(() => {
+                      const diffDays = Math.ceil(
+                        (new Date(endDate).getTime() -
+                          new Date(startDate).getTime()) /
+                          (1000 * 60 * 60 * 24),
+                      )
+                      const weeks = diffDays / 7
+                      return `${weeks.toFixed(1)} weeks`
+                    })()}
+                  </Badge>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="space-y-4">
-          {schools.map((school) => (
-            <Card key={school.id} className="p-2">
-              <CardHeader className="flex flex-col-reverse lg:flex-row lg:items-center justify-between max-lg:gap-5">
-                <div className="flex items-center gap-3">
-                  <Input
-                    value={school.schoolName}
-                    onChange={(e) =>
-                      updateSchoolName(school.id, e.target.value)
-                    }
-                    className="w-52 sm:w-80"
-                  />
-                  <Badge>Modules: {school.modules.length}</Badge>
-                </div>
+          {/* Schools */}
+          <div className="space-y-4">
+            {schools.map((sch) => (
+              <Card key={sch.id} className="p-2">
+                <CardHeader className="flex flex-col-reverse lg:flex-row lg:items-center justify-between max-lg:gap-5">
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={sch.schoolId}
+                      onChange={(e) =>
+                        updateSchoolField(sch.id, "schoolId", e.target.value)
+                      }
+                      className="w-52 sm:w-80 border rounded px-2 py-1"
+                    >
+                      <option value="" disabled>
+                        -- Select School --
+                      </option>
+                      {schoolsList.map((s) => (
+                        <option key={s._id} value={s._id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    <Badge>Modules: {sch.modules.length}</Badge>
+                  </div>
 
-                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => addModuleRow(sch.id)}
+                    >
+                      Add Module
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => removeSchool(sch.id)}
+                    >
+                      Remove School
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <div className="space-y-3">
+                    {sch.modules.map((module) => (
+                      <Fragment key={module.id}>
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
+                          <div className="md:col-span-2">
+                            <Label className="mx-1 my-2">Module</Label>
+                            <select
+                              value={module.moduleId}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "moduleId",
+                                  e.target.value,
+                                )
+                              }
+                              className="border rounded px-2 py-1 w-full"
+                            >
+                              <option value="" disabled>
+                                -- Select Module --
+                              </option>
+                              {modulesList.map((mod) => (
+                                <option key={mod._id} value={mod._id}>
+                                  {mod.code} {mod.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="mx-1 my-2">Campus</Label>
+                            <select
+                              value={module.campus}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "campus",
+                                  e.target.value,
+                                )
+                              }
+                              className="border rounded px-2 py-1 w-full"
+                            >
+                              <option value="" disabled>
+                                -- Select Campus --
+                              </option>
+                              {CAMPUSES.map((campus) => (
+                                <option key={campus} value={campus}>
+                                  {campus}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="mx-1 my-2">Start</Label>
+                            <Input
+                              type="time"
+                              value={module.startTime}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "startTime",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full"
+                              step="60"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="mx-1 my-2">End</Label>
+                            <Input
+                              type="time"
+                              value={module.endTime}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "endTime",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full"
+                              step="60"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="mx-1 my-2">Room</Label>
+                            <select
+                              value={module.roomId}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "roomId",
+                                  e.target.value,
+                                )
+                              }
+                              className="border rounded px-2 py-1 w-full"
+                            >
+                              <option value="" disabled>
+                                -- Select Room --
+                              </option>
+                              {roomsList
+                                .filter((room) => room.campus === module.campus)
+                                .map((r) => (
+                                  <option key={r._id} value={r._id}>
+                                    {r.name} (Cap: {r.capacity})
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="mx-1 my-2">Lecturer</Label>
+                            <select
+                              value={module.lecturerId}
+                              onChange={(e) =>
+                                updateModuleField(
+                                  sch.id,
+                                  module.id,
+                                  "lecturerId",
+                                  e.target.value,
+                                )
+                              }
+                              className="border rounded px-2 py-1 w-full"
+                            >
+                              <option value="" disabled>
+                                -- Select Lecturer --
+                              </option>
+                              {lecturersList.map((lecturer) => (
+                                <option key={lecturer._id} value={lecturer._id}>
+                                  {lecturer.firstName} {lecturer.lastName}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => removeModuleRow(sch.id, module.id)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </Fragment>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            <div className="flex gap-2">
+              <Button onClick={addSchool}>Add School</Button>
+              <div className="flex-1" />
+              <div className="text-right">
+                {conflicts.length > 0 && (
+                  <div className="mb-2 text-sm text-red-700">
+                    <strong>Conflicts detected:</strong>
+                    <ul className="list-disc list-inside">
+                      {conflicts.slice(0, 6).map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {/* <Button onClick={handleSave} disabled={saving} className="ml-2">
+                  {saving ? "Saving..." : "Save Timetable"}
+                </Button> */}
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => addModuleRow(school.id)}
+                    onClick={() => router.push("/timetable")}
                   >
-                    Add Module
+                    Cancel
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => removeSchool(school.id)}
-                  >
-                    Remove School
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? "Creating..." : "Create Timetable"}
                   </Button>
                 </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-3">
-                  {school.modules.map((m) => (
-                    <Fragment key={m.id}>
-                      <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-                        <div className="md:col-span-2">
-                          <Label className="mx-1 my-2">Module Title</Label>
-                          {/* <Input
-                            value={m.title}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "title",
-                                e.target.value
-                              )
-                            }
-                          /> */}
-                          <select
-                            value={session}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "title",
-                                e.target.value,
-                              )
-                            }
-                            className="border rounded px-2 py-1"
-                          >
-                            {modules.map((module) => (
-                              <option key={module} value={module}>
-                                {module}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <Label className="mx-1 my-2">Start</Label>
-                          <Input
-                            type="time"
-                            value={m.startTime}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "startTime",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="mx-1 my-2">End</Label>
-                          <Input
-                            type="time"
-                            value={m.endTime}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "endTime",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <Label className="mx-1 my-2">Venue</Label>
-                          {/* <Input
-                            value={m.venue}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "venue",
-                                e.target.value
-                              )
-                            }
-                          /> */}
-                          <select
-                            value={rooms}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "venue",
-                                e.target.value,
-                              )
-                            }
-                            className="border rounded px-2 py-1"
-                          >
-                            {rooms.map((room) => (
-                              <option key={room} value={room}>
-                                {room}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <Label className="mx-1 my-2">Lecturer</Label>
-                          {/* <Input
-                            value={m.lecturer}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "lecturer",
-                                e.target.value
-                              )
-                            }
-                          /> */}
-                          <select
-                            value={lecturers}
-                            onChange={(e) =>
-                              updateModuleField(
-                                school.id,
-                                m.id,
-                                "lecturer",
-                                e.target.value,
-                              )
-                            }
-                            className="border rounded px-2 py-1"
-                          >
-                            {lecturers.map((lecturer) => (
-                              <option key={lecturer} value={lecturer}>
-                                {lecturer}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="destructive"
-                            onClick={() => removeModuleRow(school.id, m.id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* quick inline conflict hint for this row */}
-                      <div className="text-xs text-yellow-700 mt-1">
-                        {/* warn if start >= end */}
-                        {m.startTime &&
-                          m.endTime &&
-                          timeToMinutes(m.startTime) >=
-                            timeToMinutes(m.endTime) && (
-                            <div>
-                              Invalid time range: start should be before end.
-                            </div>
-                          )}
-                      </div>
-                    </Fragment>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          <div className="flex gap-2">
-            <Button onClick={addSchool}>Add School</Button>
-            <div className="flex-1" />
-            <div className="text-right">
-              {conflicts.length > 0 && (
-                <div className="mb-2 text-sm text-red-700">
-                  <strong>Conflicts detected:</strong>
-                  <ul className="list-disc list-inside">
-                    {conflicts.slice(0, 6).map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {saveState.error && (
-                <div className="text-sm text-red-600 mb-2">
-                  {saveState.error}
-                </div>
-              )}
-              {saveState.success && (
-                <div className="text-sm text-green-600 mb-2">
-                  {saveState.success}
-                </div>
-              )}
-
-              <Button
-                onClick={handleSave}
-                disabled={saveState.saving}
-                className="ml-2"
-              >
-                {saveState.saving ? "Saving..." : "Save Timetable"}
-              </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }
