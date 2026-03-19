@@ -1,0 +1,30 @@
+# Ignore backend folder completely
+
+backend/
+
+# Ignore development files
+
+.git
+.github
+.gitignore
+
+# Ignore environment files
+
+.env
+.env.local
+.env.production
+.env.development
+
+# Ignore documentation
+
+README.md
+LICENSE
+\*.log
+
+# Ignore IDE files
+
+.vscode/
+.idea/
+_.swp
+_.swo
+\*~
