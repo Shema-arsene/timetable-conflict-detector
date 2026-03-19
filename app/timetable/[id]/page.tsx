@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Clock, ArrowLeft, Printer } from "lucide-react"
+import { CalendarDays, Clock, ArrowLeft, Pencil } from "lucide-react"
 import Link from "next/link"
 import axios from "axios"
 import ExportOptions from "@/components/ExportOptions"
@@ -82,13 +82,16 @@ const TimetableDetailPage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
           <div className="flex gap-2">
             <ExportOptions timetable={timetable} fileName={timetable.title} />
-            <Link href={`/timetable/${params.id}/edit`}>
-              <Button variant="outline">Edit</Button>
+            <Link href={`/timetable/edit/${params.id}`}>
+              <Button variant="outline">
+                <Pencil className="w-4 h-4" />
+                Edit
+              </Button>
             </Link>
           </div>
         </div>

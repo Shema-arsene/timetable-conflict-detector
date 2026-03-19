@@ -234,7 +234,7 @@ const ExportOptions = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" disabled={exporting}>
-          <ArrowDownToLine className="w-4 h-4 mr-2" />
+          <ArrowDownToLine className="w-4 h-4" />
           {exporting ? "Exporting..." : "Export"}
         </Button>
       </DropdownMenuTrigger>
