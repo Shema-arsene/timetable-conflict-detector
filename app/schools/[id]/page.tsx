@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
 
 interface School {
   _id: string
@@ -50,7 +51,7 @@ const EditSchoolPage = () => {
         setForm(res.data)
       } catch (error) {
         console.error("Failed to fetch school:", error)
-        alert("Failed to load school details.")
+        toast.error("Failed to load school details.")
         router.push("/schools")
       } finally {
         setFetching(false)
@@ -65,7 +66,9 @@ const EditSchoolPage = () => {
     setLoading(true)
 
     if (!form.name || !form.campus) {
-      alert("School name and campus are required.")
+      toast.error("Failed to update school.", {
+        description: "School name and campus are required.",
+      })
       setLoading(false)
       return
     }
@@ -80,7 +83,9 @@ const EditSchoolPage = () => {
       router.push("/schools")
     } catch (error) {
       console.error("Failed to update school:", error)
-      alert("Something went wrong while updating the school.")
+      toast.error("Failed to update school.", {
+        description: "Something went wrong while updating the school.",
+      })
     } finally {
       setLoading(false)
     }
@@ -95,7 +100,9 @@ const EditSchoolPage = () => {
       router.push("/schools")
     } catch (error) {
       console.error("Failed to delete school:", error)
-      alert("Failed to delete school. Make sure it has no modules attached.")
+      toast.error("Failed to delete school.", {
+        description: "Cannot delete school with existing modules.",
+      })
     } finally {
       setDeleting(false)
     }
