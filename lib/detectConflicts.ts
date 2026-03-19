@@ -1,62 +1,57 @@
-// Conflict Detection Logic
+import { TimetableEntry, Conflict } from "../types/timetable"
 
-// import { SessionType } from "../backend/src/models/sessionType.js"
-
-export interface TimetableSlot {
-  module: string
-  room: string
-  lecturer: string
-  className: string
-  day: string
-  startTime: string
-  endTime: string
-  // session: SessionType
-}
-
-interface Conflict {
-  type: "room" | "lecturer" | "class"
-  slotA: TimetableSlot
-  slotB: TimetableSlot
-}
-
-const toMinutes = (time: string): number => {
+function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number)
   return h * 60 + m
 }
 
-const overlaps = (
-  aStart: string,
-  aEnd: string,
-  bStart: string,
-  bEnd: string,
-): boolean => {
-  return (
-    toMinutes(aStart) < toMinutes(bEnd) && toMinutes(bStart) < toMinutes(aEnd)
-  )
+function doTimesOverlap(
+  start1: string,
+  end1: string,
+  start2: string,
+  end2: string,
+): boolean {
+  const s1 = timeToMinutes(start1)
+  const e1 = timeToMinutes(end1)
+  const s2 = timeToMinutes(start2)
+  const e2 = timeToMinutes(end2)
+
+  return Math.max(s1, s2) < Math.min(e1, e2)
 }
 
-export const detectConflicts = (slots: TimetableSlot[]): Conflict[] => {
+export function detectConflicts(entries: TimetableEntry[]): Conflict[] {
   const conflicts: Conflict[] = []
 
-  for (let i = 0; i < slots.length; i++) {
-    for (let j = i + 1; j < slots.length; j++) {
-      const a = slots[i]
-      const b = slots[j]
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const a = entries[i]
+      const b = entries[j]
 
-      if (a.day !== b.day) continue
-      // if (a.session !== b.session) continue
-      if (!overlaps(a.startTime, a.endTime, b.startTime, b.endTime)) continue
+      // Only check if same campus (different campuses don't conflict)
+      if (a.campus !== b.campus) continue
 
-      if (a.room === b.room) {
-        conflicts.push({ type: "room", slotA: a, slotB: b })
+      // Check if times overlap
+      if (!doTimesOverlap(a.startTime, a.endTime, b.startTime, b.endTime))
+        continue
+
+      // Room conflict
+      if (a.roomId === b.roomId) {
+        conflicts.push({
+          type: "room",
+          entry1: a,
+          entry2: b,
+          message: `Room conflict: Same room used at overlapping time`,
+        })
       }
 
-      if (a.lecturer === b.lecturer) {
-        conflicts.push({ type: "lecturer", slotA: a, slotB: b })
-      }
-
-      if (a.className === b.className) {
-        conflicts.push({ type: "class", slotA: a, slotB: b })
+      // Lecturer conflict
+      if (a.lecturerId === b.lecturerId) {
+        conflicts.push({
+          type: "lecturer",
+          entry1: a,
+          entry2: b,
+          message: `Lecturer conflict: Same lecturer assigned to overlapping sessions`,
+        })
       }
     }
   }
