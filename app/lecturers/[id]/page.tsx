@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { toast } from "sonner"
 
 interface LecturerForm {
   firstName: string
@@ -45,7 +46,9 @@ const EditLecturerPage = () => {
       })
     } catch (error) {
       console.error("Failed to load lecturer", error)
-      alert("Failed to update lecturer")
+      toast.error("Failed to load lecturer", {
+        description: "Something went wrong while loading the lecturer.",
+      })
     } finally {
       setLoading(false)
     }
@@ -69,39 +72,44 @@ const EditLecturerPage = () => {
       router.push("/lecturers")
     } catch (error) {
       console.error("Failed to update lecturer", error)
-      alert("Failed to update lecturer")
+      toast.error("Failed to update lecturer.", {
+        description: "Something went wrong while updating the lecturer.",
+      })
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this lecturer? This action cannot be undone.",
-    )
-
-    if (!confirmed) return
-
     setDeleting(true)
 
     try {
       await axios.delete(`${API_URL}/api/lecturers/${id}`)
       router.push("/lecturers")
+      toast.success("Lecturer deleted", {
+        description: "Lecturer deleted successfully.",
+      })
     } catch (error) {
       console.error("Failed to delete lecturer", error)
-      alert("Failed to delete lecturer")
+      toast.error("Cannot delete lecturer", {
+        description: "This lecturer is assigned to future timetable(s)",
+      })
     } finally {
       setDeleting(false)
     }
   }
 
   if (loading) {
-    return <p className="p-6">Loading lecturer…</p>
+    return (
+      <div className="min-h-screen p-6 max-w-xl flex items-center justify-center">
+        <p className="p-6">Loading lecturer…</p>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen p-6 max-w-xl">
-      <Card className="p-3 md:p-6">
+    <div className="min-h-screen p-6 w-full max-w-xl mx-auto flex items-center justify-center">
+      <Card className="w-full p-4 md:p-6">
         <div>
           <Button type="button" variant="outline" onClick={() => router.back()}>
             {/* Cancel */}
