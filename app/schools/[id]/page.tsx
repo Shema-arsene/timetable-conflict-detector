@@ -79,7 +79,9 @@ const EditSchoolPage = () => {
         campus: form.campus,
         description: form.description,
       })
-
+      toast.success("School updated successfully.", {
+        description: "The school has been successfully updated.",
+      })
       router.push("/schools")
     } catch (error) {
       console.error("Failed to update school:", error)
@@ -96,7 +98,9 @@ const EditSchoolPage = () => {
 
     try {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/schools/${id}`)
-
+      toast.success("School deleted successfully.", {
+        description: "The school has been successfully deleted.",
+      })
       router.push("/schools")
     } catch (error) {
       console.error("Failed to delete school:", error)
