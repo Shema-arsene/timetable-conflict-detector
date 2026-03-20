@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 
 import { CAMPUSES } from "@/constants/campus"
 
@@ -36,17 +37,24 @@ const NewSchoolPage = () => {
 
     if (!form.name || !form.campus) {
       setError("School name and campus are required")
-      alert("School name and campus are required.")
+      toast.error("Error creating school", {
+        description: "School name and campus are required.",
+      })
       setLoading(false)
       return
     }
 
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/schools`, form)
+      toast.success("School created successfully", {
+        description: "The school has been created.",
+      })
       router.push("/schools")
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create school")
-      alert("Something went wrong while creating the school.")
+      toast.error("Error creating school", {
+        description: "Failed to create school.",
+      })
     } finally {
       setLoading(false)
     }
