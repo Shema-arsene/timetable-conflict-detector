@@ -696,7 +696,10 @@ const NewTimetablePage = () => {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleSave} disabled={saving}>
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving || conflicts.length > 0}
+                  >
                     {saving ? "Creating..." : "Create Timetable"}
                   </Button>
                 </div>
