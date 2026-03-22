@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 import { CAMPUSES } from "@/constants/campus"
 import {
@@ -49,15 +50,27 @@ const AddRoomPage = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (!form.name || !form.campus || form.capacity <= 100) {
+      toast.error("Error creating room", {
+        description: "Please fill in all fields with valid values.",
+      })
+      return
+    }
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/rooms`, form)
+      toast.success("Room created successfully", {
+        description: "The room has been created.",
+      })
       router.push("/rooms")
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create room")
+      toast.error("Failed to create room", {
+        description: "There was an error to creating room.",
+      })
     } finally {
       setLoading(false)
     }
