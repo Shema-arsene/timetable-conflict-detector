@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/table"
 import { Plus, Pencil } from "lucide-react"
 import Link from "next/link"
-
 import axios from "axios"
+import { FilterBar, FilterOptions } from "@/components/FilterBar"
+import { Badge } from "@/components/ui/badge"
 
 interface School {
   _id: string
@@ -38,6 +39,11 @@ const ModulesPage = () => {
   const [modules, setModules] = useState<Module[]>([])
   const [loading, setLoading] = useState(true)
   const [schools, setSchools] = useState<School[]>([])
+  const [filteredModules, setFilteredModules] = useState<Module[]>([])
+  const [filters, setFilters] = useState<FilterOptions>({
+    search: "",
+    sortBy: "name-asc",
+  })
 
   const fetchModules = async () => {
     try {
@@ -59,6 +65,47 @@ const ModulesPage = () => {
       .then((res) => setSchools(res.data))
   }
 
+  const applyFilters = () => {
+    let filtered = [...modules]
+
+    // Filter by search (module name or code)
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      filtered = filtered.filter(
+        (module) =>
+          module.name.toLowerCase().includes(searchLower) ||
+          module.code.toLowerCase().includes(searchLower),
+      )
+    }
+
+    // Apply sorting
+    if (filters.sortBy) {
+      switch (filters.sortBy) {
+        case "name-asc":
+          filtered.sort((a, b) => a.name.localeCompare(b.name))
+          break
+        case "name-desc":
+          filtered.sort((a, b) => b.name.localeCompare(a.name))
+          break
+        case "code-asc":
+          filtered.sort((a, b) => a.code.localeCompare(b.code))
+          break
+        case "code-desc":
+          filtered.sort((a, b) => b.code.localeCompare(a.code))
+          break
+      }
+    }
+
+    setFilteredModules(filtered)
+  }
+
+  const sortOptions = [
+    { value: "name-asc", label: "Name (A-Z)" },
+    { value: "name-desc", label: "Name (Z-A)" },
+    { value: "code-asc", label: "Code (A-Z)" },
+    { value: "code-desc", label: "Code (Z-A)" },
+  ]
+
   useEffect(() => {
     fetchSchools()
   }, [])
@@ -66,6 +113,10 @@ const ModulesPage = () => {
   useEffect(() => {
     fetchModules()
   }, [])
+
+  useEffect(() => {
+    applyFilters()
+  }, [modules, filters])
 
   return (
     <section className="min-h-screen p-6 space-y-6">
@@ -83,37 +134,57 @@ const ModulesPage = () => {
           <CardTitle>All Modules</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading modules...</p>
-          ) : modules.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No modules found.</p>
+          <FilterBar
+            filters={filters}
+            onFiltersChange={setFilters}
+            totalCount={modules.length}
+            filteredCount={filteredModules.length}
+            showSessionFilter={false}
+            showCampusFilter={false}
+            showSortBy={true}
+            searchPlaceholder="Search by module name or code..."
+            sortOptions={sortOptions}
+          />
+
+          {filteredModules.length === 0 ? (
+            <p className="text-sm text-gray-600 mt-4">No modules found.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>School</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {modules.map((module) => (
-                  <TableRow key={module._id}>
-                    <TableCell>{module.code}</TableCell>
-                    <TableCell>{module.name}</TableCell>
-                    <TableCell>{module.school.name}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/modules/${module._id}/`}>
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </TableCell>
+            <div className="mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Module Name</TableHead>
+                    <TableHead>School</TableHead>
+                    <TableHead>Campus</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredModules.map((module) => (
+                    <TableRow key={module._id}>
+                      <TableCell className="font-mono font-semibold">
+                        {module.code}
+                      </TableCell>
+                      <TableCell>{module.name}</TableCell>
+                      <TableCell>{module.school?.name || "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {module.school?.campus || "—"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/modules/${module._id}`}>
+                          <Button size="sm" variant="outline">
+                            Edit
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
