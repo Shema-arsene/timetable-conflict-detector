@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { CAMPUSES } from "@/constants/campus"
 import { FilterBar, FilterOptions } from "@/components/FilterBar"
+import { EmptyState } from "@/components/EmptyState"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -51,19 +52,6 @@ const LecturersPage = () => {
   useEffect(() => {
     fetchAllLecturers()
   }, [])
-
-  const fetchLecturers = async () => {
-    try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/lecturers`,
-      )
-      setLecturers(res.data)
-    } catch (err) {
-      setError("Failed to fetch lecturers")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const applyFilters = () => {
     let filtered = [...lecturers]
@@ -143,8 +131,8 @@ const LecturersPage = () => {
               campusOptions={campusOptions}
             />
 
-            {filteredLecturers.length === 0 ? (
-              <p className="text-sm text-gray-600 mt-4">No lecturers found.</p>
+            {!loading && filteredLecturers.length === 0 ? (
+              <EmptyState type="lecturers" />
             ) : (
               <div className="mt-4">
                 <Table>
@@ -153,7 +141,6 @@ const LecturersPage = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
-                      {/* <TableHead>Campus</TableHead> */}
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>

@@ -16,6 +16,7 @@ import Link from "next/link"
 import axios from "axios"
 import { FilterBar, FilterOptions } from "@/components/FilterBar"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/EmptyState"
 
 interface School {
   _id: string
@@ -146,8 +147,8 @@ const ModulesPage = () => {
             sortOptions={sortOptions}
           />
 
-          {filteredModules.length === 0 ? (
-            <p className="text-sm text-gray-600 mt-4">No modules found.</p>
+          {!loading && filteredModules.length === 0 ? (
+            <EmptyState type="modules" />
           ) : (
             <div className="mt-4">
               <Table>

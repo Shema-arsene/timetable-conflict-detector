@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CAMPUSES } from "@/constants/campus"
 import { FilterBar, FilterOptions } from "@/components/FilterBar"
+import { EmptyState } from "@/components/EmptyState"
 
 type School = {
   _id: string
@@ -121,8 +122,8 @@ const SchoolsPage = () => {
             campusOptions={campusOptions}
           />
 
-          {filteredSchools.length === 0 ? (
-            <p className="text-sm text-gray-600 mt-4">No schools found.</p>
+          {!loading && filteredSchools.length === 0 ? (
+            <EmptyState type="schools" />
           ) : (
             <div className="mt-4">
               <Table>
