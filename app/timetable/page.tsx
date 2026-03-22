@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge"
 import { Eye, Pencil } from "lucide-react"
 import { FilterBar, FilterOptions } from "@/components/FilterBar"
 import { toast } from "sonner"
+import { ErrorState } from "@/components/ErrorState"
+import { EmptyState } from "@/components/EmptyState"
 
 type Timetable = {
   _id: string
@@ -188,8 +190,10 @@ const TimetablesPage = () => {
             sessionOptions={sessionOptions}
           />
 
-          {filteredTimetables.length === 0 ? (
-            <p className="text-sm text-gray-600 mt-4">No timetables found.</p>
+          {error && <ErrorState message={error} onRetry={fetchTimetables} />}
+
+          {!loading && filteredTimetables.length === 0 ? (
+            <EmptyState type="timetables" />
           ) : (
             <div className="mt-4">
               <Table>
