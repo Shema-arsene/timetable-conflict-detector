@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FilterBar, FilterOptions } from "@/components/FilterBar"
+import { Badge } from "@/components/ui/badge"
+import { CAMPUSES } from "@/constants/campus"
 
 type Room = {
   _id: string
@@ -26,23 +29,75 @@ const RoomsPage = () => {
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [filteredRooms, setFilteredRooms] = useState<Room[]>([])
+  const [filters, setFilters] = useState<FilterOptions>({
+    search: "",
+    campus: "all",
+    sortBy: "name-asc",
+  })
+
+  const fetchRooms = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/rooms`,
+      )
+      setRooms(res.data)
+    } catch (err) {
+      setError("Failed to fetch rooms")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/rooms`,
-        )
-        setRooms(res.data)
-      } catch (err) {
-        setError("Failed to fetch rooms")
-      } finally {
-        setLoading(false)
+    fetchRooms()
+  }, [])
+
+  const applyFilters = () => {
+    let filtered = [...rooms]
+
+    // Filter by search (room name)
+    if (filters.search) {
+      filtered = filtered.filter((room) =>
+        room.name.toLowerCase().includes(filters.search!.toLowerCase()),
+      )
+    }
+
+    // Filter by campus
+    if (filters.campus && filters.campus !== "all") {
+      filtered = filtered.filter((room) => room.campus === filters.campus)
+    }
+
+    // Apply sorting
+    if (filters.sortBy) {
+      switch (filters.sortBy) {
+        case "name-asc":
+          filtered.sort((a, b) => a.name.localeCompare(b.name))
+          break
+        case "name-desc":
+          filtered.sort((a, b) => b.name.localeCompare(a.name))
+          break
+        case "newest":
+          // For rooms, newest means highest capacity
+          filtered.sort((a, b) => b.capacity - a.capacity)
+          break
+        case "oldest":
+          filtered.sort((a, b) => a.capacity - b.capacity)
+          break
       }
     }
 
-    fetchRooms()
-  }, [])
+    setFilteredRooms(filtered)
+  }
+
+  const campusOptions = CAMPUSES.map((campus) => ({
+    value: campus,
+    label: campus,
+  }))
+
+  useEffect(() => {
+    applyFilters()
+  }, [rooms, filters])
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -55,44 +110,52 @@ const RoomsPage = () => {
         </CardHeader>
 
         <CardContent>
-          {loading && <p>Loading rooms...</p>}
+          <FilterBar
+            filters={filters}
+            onFiltersChange={setFilters}
+            totalCount={rooms.length}
+            filteredCount={filteredRooms.length}
+            showCampusFilter={true}
+            showSortBy={true}
+            searchPlaceholder="Search by room name..."
+            campusOptions={campusOptions}
+          />
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-
-          {!loading && rooms.length === 0 && (
-            <p className="text-sm text-gray-600">
-              No rooms found. Create one to get started.
-            </p>
-          )}
-
-          {!loading && rooms.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Campus</TableHead>
-                  <TableHead>Capacity</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {rooms.map((room) => (
-                  <TableRow key={room._id}>
-                    <TableCell className="font-semibold">{room.name}</TableCell>
-                    <TableCell>{room.campus}</TableCell>
-                    <TableCell>{room.capacity}</TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/rooms/${room._id}`}>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </Link>
-                    </TableCell>
+          {filteredRooms.length === 0 ? (
+            <p className="text-sm text-gray-600 mt-4">No rooms found.</p>
+          ) : (
+            <div className="mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Campus</TableHead>
+                    <TableHead>Capacity</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredRooms.map((room) => (
+                    <TableRow key={room._id}>
+                      <TableCell className="font-semibold">
+                        {room.name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{room.campus}</Badge>
+                      </TableCell>
+                      <TableCell>{room.capacity}</TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/rooms/${room._id}`}>
+                          <Button size="sm" variant="outline">
+                            Edit
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
