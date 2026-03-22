@@ -314,7 +314,7 @@ const EditTimetablePage = () => {
 
   useEffect(() => {
     if (hasPastStartTime) {
-      toast.error("Error fetching timetable data", {
+      toast.error("⚠️ Conflict", {
         description:
           "One or more module entries have a start time in the past. Please update the start times to be in the future before saving.",
       })
