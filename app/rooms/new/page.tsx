@@ -69,7 +69,7 @@ const AddRoomPage = () => {
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create room")
       toast.error("Failed to create room", {
-        description: "There was an error to creating room.",
+        description: "There was an error creating room.",
       })
     } finally {
       setLoading(false)
