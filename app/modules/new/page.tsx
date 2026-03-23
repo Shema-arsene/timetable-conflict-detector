@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 
 import axios from "axios"
 
@@ -42,7 +43,12 @@ const CreateModulePage = () => {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
-    if (!code || !name || !school) return
+    if (!code || !name || !school) {
+      toast.error("Error creating module", {
+        description: "Please fill in all the required fields.",
+      })
+      return
+    }
 
     try {
       setLoading(true)
@@ -52,8 +58,15 @@ const CreateModulePage = () => {
         school,
       })
 
+      toast.success("Module created successfully", {
+        description: "The module has been successfully created.",
+      })
+
       router.push("/modules")
     } catch (error) {
+      toast.error("Failed to create module", {
+        description: "There was an error creating the module.",
+      })
       console.error(error)
     } finally {
       setLoading(false)
