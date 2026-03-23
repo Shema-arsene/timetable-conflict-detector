@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
-// import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 import axios from "axios"
 
@@ -27,7 +27,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 const EditModulePage = () => {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  //   const { toast } = useToast()
 
   const [form, setForm] = useState<ModuleForm>({
     code: "",
@@ -56,11 +55,9 @@ const EditModulePage = () => {
         school: data.school._id,
       })
     } catch (error) {
-      // toast({
-      //   title: "Error",
-      //   description: "Could not load module",
-      //   variant: "destructive",
-      // })
+      toast.error("Could not load module", {
+        description: "There was an error fetching the module.",
+      })
       console.error(error)
       router.push("/modules")
     } finally {
@@ -87,11 +84,9 @@ const EditModulePage = () => {
 
   const handleUpdate = async () => {
     if (!form.code || !form.name || !form.school) {
-      //   toast({
-      //     title: "Validation error",
-      //     description: "All fields are required",
-      //     variant: "destructive",
-      //   })
+      toast.error("Error updating module", {
+        description: "All fields are required",
+      })
       return
     }
 
@@ -104,18 +99,15 @@ const EditModulePage = () => {
         school: form.school,
       })
 
-      //   toast({
-      //     title: "Module updated",
-      //     description: "Changes saved successfully",
-      //   })
+      toast.success("Module updated", {
+        description: "Changes saved successfully",
+      })
 
       router.push("/modules")
     } catch (error) {
-      //   toast({
-      //     title: "Error",
-      //     description: "Failed to update module",
-      //     variant: "destructive",
-      //   })
+      toast.error("Failed to update module", {
+        description: "There was an error updating the module.",
+      })
       console.error("Failed to update module:", error)
     } finally {
       setSaving(false)
