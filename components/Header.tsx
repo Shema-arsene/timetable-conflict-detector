@@ -54,9 +54,9 @@ const Header = () => {
             </Link>
           ))}
 
-          <Link href="/auth/signin">
+          {/* <Link href="/auth/signin">
             <Button variant="default">Sign In</Button>
-          </Link>
+          </Link> */}
         </nav>
 
         {/* Hamburger Button*/}
@@ -109,7 +109,7 @@ const Header = () => {
             ))}
 
             {/* Sign in button for mobile */}
-            <div className="flex items-center justify-center pt-4">
+            {/* <div className="flex items-center justify-center pt-4">
               <Link
                 href="/auth/signin"
                 onClick={() => setOpen(false)}
@@ -119,7 +119,7 @@ const Header = () => {
                   Sign In
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </nav>
         </div>
       </div>
