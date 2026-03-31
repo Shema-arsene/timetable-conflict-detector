@@ -11,6 +11,7 @@ import { CAMPUSES } from "@/constants/campus"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { validateTimetableDates } from "@/lib/dateValidation"
+import { TriangleAlert, X } from "lucide-react"
 
 // Types
 type SessionType = "day" | "evening" | "weekend"
@@ -139,6 +140,7 @@ const NewTimetablePage = () => {
   const [roomsList, setRoomsList] = useState<any[]>([])
   const [lecturersList, setLecturersList] = useState<any[]>([])
   const [timetableHeading, setTimetableHeading] = useState("")
+  const [viewConflicts, setViewConflicts] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -676,19 +678,6 @@ const NewTimetablePage = () => {
               <Button onClick={addSchool}>Add School</Button>
               <div className="flex-1" />
               <div className="text-right">
-                {conflicts.length > 0 && (
-                  <div className="mb-2 text-sm text-red-700">
-                    <strong>Conflicts detected:</strong>
-                    <ul className="list-disc list-inside">
-                      {conflicts.slice(0, 6).map((c, i) => (
-                        <li key={i}>{c}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {/* <Button onClick={handleSave} disabled={saving} className="ml-2">
-                  {saving ? "Saving..." : "Save Timetable"}
-                </Button> */}
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -703,6 +692,51 @@ const NewTimetablePage = () => {
                     {saving ? "Creating..." : "Create Timetable"}
                   </Button>
                 </div>
+              </div>
+
+              <div
+                className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${viewConflicts ? "translate-x-0" : "translate-x-[calc(100%-3rem)]"}`}
+              >
+                <div className="cursor-pointer relative">
+                  <div className="flex items-center gap-2 bg-white rounded-full shadow-lg p-2 pr-4 border">
+                    <div className="relative">
+                      <TriangleAlert
+                        onClick={() => setViewConflicts(!viewConflicts)}
+                        className="h-8 w-8 text-red-600 cursor-pointer hover:scale-110 transition-transform"
+                      />
+                      {conflicts.length > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-red-600 h-4 w-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+                          {conflicts.length}
+                        </div>
+                      )}
+                    </div>
+                    
+                  </div>
+                </div>
+
+                {conflicts.length > 0 && viewConflicts && (
+                  <div className="absolute bottom-14 right-0 bg-white rounded-lg shadow-xl p-4 w-96 max-w-[calc(100vw-2rem)] border animate-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <strong className="flex items-center justify-center gap-2 text-red-600">
+                        <TriangleAlert /> Conflicts
+                        Detected
+                      </strong>
+                      <button
+                        onClick={() => setViewConflicts(false)}
+                        className="text-gray-900 hover:text-gray-600"
+                      >
+                        <X className="cursor-pointer" />
+                      </button>
+                    </div>
+                    <ol className="list-disc list-inside space-y-1 max-h-64 overflow-y-auto">
+                      {conflicts.slice(0, 6).map((conflict, index) => (
+                        <li key={index} className="text-sm">
+                          {conflict}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
               </div>
             </div>
           </div>
