@@ -424,7 +424,7 @@ const EditTimetablePage = () => {
     const loadingToast = toast.loading("Deleting timetable...")
 
     try {
-      await axios.delete(`${API_URL}/api/timetable/${timetableId}`)
+      await axios.delete(`${API_URL}/api/timetables/${timetableId}`)
       toast.dismiss(loadingToast)
       toast.success("Timetable deleted", {
         description: "The timetable has been permanently removed.",
@@ -794,49 +794,47 @@ const EditTimetablePage = () => {
         </div>
 
         <div
-                className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${viewConflicts ? "translate-x-0" : "translate-x-[calc(100%-3rem)]"}`}
-              >
-                <div className="cursor-pointer relative">
-                  <div className="flex items-center gap-2 bg-white rounded-full shadow-lg p-2 pr-4 border">
-                    <div className="relative">
-                      <TriangleAlert
-                        onClick={() => setViewConflicts(!viewConflicts)}
-                        className="h-8 w-8 text-red-600 cursor-pointer hover:scale-110 transition-transform"
-                      />
-                      {conflicts.length > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-red-600 h-4 w-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
-                          {conflicts.length}
-                        </div>
-                      )}
-                    </div>
-                    
-                  </div>
-                </div>
-
-                {conflicts.length > 0 && viewConflicts && (
-                  <div className="absolute bottom-14 right-0 bg-white rounded-lg shadow-xl p-4 w-96 max-w-[calc(100vw-2rem)] border animate-in slide-in-from-bottom-2 duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <strong className="flex items-center justify-center gap-2 text-red-600">
-                        <TriangleAlert /> Conflicts
-                        Detected
-                      </strong>
-                      <button
-                        onClick={() => setViewConflicts(false)}
-                        className="text-gray-900 hover:text-gray-600"
-                      >
-                        <X className="cursor-pointer" />
-                      </button>
-                    </div>
-                    <ol className="list-disc list-inside space-y-1 max-h-64 overflow-y-auto">
-                      {conflicts.slice(0, 6).map((conflict, index) => (
-                        <li key={index} className="text-sm">
-                          {conflict}
-                        </li>
-                      ))}
-                    </ol>
+          className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${viewConflicts ? "translate-x-0" : "translate-x-[calc(100%-3rem)]"}`}
+        >
+          <div className="cursor-pointer relative">
+            <div className="flex items-center gap-2 bg-white rounded-full shadow-lg p-2 pr-4 border">
+              <div className="relative">
+                <TriangleAlert
+                  onClick={() => setViewConflicts(!viewConflicts)}
+                  className="h-8 w-8 text-red-600 cursor-pointer hover:scale-110 transition-transform"
+                />
+                {conflicts.length > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-600 h-4 w-4 rounded-full text-white text-[10px] flex items-center justify-center font-bold">
+                    {conflicts.length}
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+
+          {conflicts.length > 0 && viewConflicts && (
+            <div className="absolute bottom-14 right-0 bg-white rounded-lg shadow-xl p-4 w-96 max-w-[calc(100vw-2rem)] border animate-in slide-in-from-bottom-2 duration-200">
+              <div className="flex items-center justify-between mb-3">
+                <strong className="flex items-center justify-center gap-2 text-red-600">
+                  <TriangleAlert /> Conflicts Detected
+                </strong>
+                <button
+                  onClick={() => setViewConflicts(false)}
+                  className="text-gray-900 hover:text-gray-600"
+                >
+                  <X className="cursor-pointer" />
+                </button>
+              </div>
+              <ol className="list-disc list-inside space-y-1 max-h-64 overflow-y-auto">
+                {conflicts.slice(0, 6).map((conflict, index) => (
+                  <li key={index} className="text-sm">
+                    {conflict}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+        </div>
 
         {/* Delete Confirmation Dialog using AlertDialog component */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
