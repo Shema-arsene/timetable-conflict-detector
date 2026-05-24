@@ -75,14 +75,22 @@ function detectConflictsFromGroups(
   const conflicts: string[] = []
   const roomIndex: Record<string, ModuleRow[]> = {}
   const lecturerIndex: Record<string, ModuleRow[]> = {}
+  const moduleIndex: Record<string, ModuleRow[]> = {}
 
   schools.forEach((school) => {
     school.modules.forEach((m) => {
       const roomName = roomsList.find((r) => r._id === m.roomId)?.name
+      const moduleName = modulesList.find((mo) => mo._id === m.moduleId)?.name
       const lecturerName =
         lecturersList.find((l) => l._id === m.lecturerId)?.firstName +
         " " +
         lecturersList.find((l) => l._id === m.lecturerId)?.lastName
+
+      if (moduleName) {
+        const k = moduleName.toLowerCase()
+        moduleIndex[k] = moduleIndex[k] || []
+        moduleIndex[k].push(m)
+      }
 
       if (roomName) {
         const k = roomName.toLowerCase()
@@ -101,6 +109,18 @@ function detectConflictsFromGroups(
   const checkOverlap = (a: ModuleRow, b: ModuleRow) =>
     Math.max(timeToMinutes(a.startTime), timeToMinutes(b.startTime)) <
     Math.min(timeToMinutes(a.endTime), timeToMinutes(b.endTime))
+
+  Object.entries(moduleIndex).forEach(([module, mods]) => {
+    for (let i = 0; i < mods.length; i++) {
+      for (let j = i + 1; j < mods.length; j++) {
+        if (checkOverlap(mods[i], mods[j])) {
+          conflicts.push(
+            `Module conflict: "${module}" is in overlapping rooms.`,
+          )
+        }
+      }
+    }
+  })
 
   Object.entries(roomIndex).forEach(([room, mods]) => {
     for (let i = 0; i < mods.length; i++) {
@@ -710,7 +730,6 @@ const NewTimetablePage = () => {
                         </div>
                       )}
                     </div>
-                    
                   </div>
                 </div>
 
@@ -718,8 +737,7 @@ const NewTimetablePage = () => {
                   <div className="absolute bottom-14 right-0 bg-white rounded-lg shadow-xl p-4 w-96 max-w-[calc(100vw-2rem)] border animate-in slide-in-from-bottom-2 duration-200">
                     <div className="flex items-center justify-between mb-3">
                       <strong className="flex items-center justify-center gap-2 text-red-600">
-                        <TriangleAlert /> Conflicts
-                        Detected
+                        <TriangleAlert /> Conflicts Detected
                       </strong>
                       <button
                         onClick={() => setViewConflicts(false)}
