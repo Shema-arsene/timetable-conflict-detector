@@ -306,10 +306,10 @@ const HomePage = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Dashboard
+            <h1 className="text-xl md:text-4xl font-bold text-gray-900">
+              Timetable Dashboard
             </h1>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="font-semibold text-sm text-gray-600 mt-2">
               Welcome back! Here's what's happening with your timetables.
             </p>
           </div>
@@ -423,7 +423,7 @@ const HomePage = () => {
 
           {/* Recent Conflicts */}
           <div>
-            <Card className="px-3 py-5">
+            {/* <Card className="px-3 py-5">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -487,10 +487,10 @@ const HomePage = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </Card> */}
 
             {/* Quick Actions */}
-            <Card className="mt-6 px-3 py-5">
+            <Card className="px-3 py-5">
               <CardHeader>
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
