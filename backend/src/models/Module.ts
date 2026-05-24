@@ -19,6 +19,7 @@ const ModuleSchema = new Schema<IModule>(
     code: {
       type: String,
       required: true,
+      unique: true,
       uppercase: true,
       trim: true,
     },
