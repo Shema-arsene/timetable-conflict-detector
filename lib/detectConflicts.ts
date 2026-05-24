@@ -53,6 +53,16 @@ export function detectConflicts(entries: TimetableEntry[]): Conflict[] {
           message: `Lecturer conflict: Same lecturer assigned to overlapping sessions`,
         })
       }
+
+      // Module conflict
+      if (a.moduleId === b.moduleId) {
+        conflicts.push({
+          type: "module",
+          entry1: a,
+          entry2: b,
+          message: `Module conflict: Same module assigned to overlapping sessions`,
+        })
+      }
     }
   }
 
