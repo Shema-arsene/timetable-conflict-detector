@@ -21,6 +21,9 @@ import { toast } from "sonner"
 import { ErrorState } from "@/components/ErrorState"
 import { EmptyState } from "@/components/EmptyState"
 
+import { useAuth } from "@/context/AuthContext"
+import { useRouter } from "next/navigation"
+
 type Timetable = {
   _id: string
   title: string
@@ -32,8 +35,11 @@ type Timetable = {
 }
 
 const TimetablesPage = () => {
+  const { isAuthenticated, loading } = useAuth()
+  const router = useRouter()
+
   const [timetables, setTimetables] = useState<Timetable[]>([])
-  const [loading, setLoading] = useState(true)
+  // const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filteredTimetables, setFilteredTimetables] = useState<Timetable[]>([])
   const [filters, setFilters] = useState<FilterOptions>({
@@ -57,13 +63,33 @@ const TimetablesPage = () => {
         description: "There was an error fetching the timetables",
       })
     } finally {
-      setLoading(false)
+      // setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchTimetables()
   }, [])
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push("/auth/signin")
+    }
+  }, [loading, isAuthenticated, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <Card className="max-w-6xl mx-auto p-6">
+          <div className="text-center py-8">Loading timetables...</div>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   useEffect(() => {
     applyFilters()
@@ -148,15 +174,15 @@ const TimetablesPage = () => {
     { value: "weekend", label: "Weekend" },
   ]
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <Card className="max-w-6xl mx-auto p-6">
-          <div className="text-center py-8">Loading timetables...</div>
-        </Card>
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 p-6">
+  //       <Card className="max-w-6xl mx-auto p-6">
+  //         <div className="text-center py-8">Loading timetables...</div>
+  //       </Card>
+  //     </div>
+  //   )
+  // }
 
   if (error) {
     return (
