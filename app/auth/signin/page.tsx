@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, FormEvent } from "react"
+import { useRouter } from "next/navigation"
 import {
   Card,
   CardHeader,
@@ -11,17 +12,35 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { loginUser } from "@/services/auth"
+import { toast } from "sonner"
 
 const SignInPage = () => {
+  const router = useRouter()
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
   //   alert("Signin Page")
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    // TODO: Replace with your Node.js backend login endpoint
-    console.log({ email, password })
+    setLoading(true)
+
+    try {
+      await loginUser(email, password)
+      toast.success("Login successful!", {
+        description: "Welcome back!",
+      })
+      router.push("/")
+    } catch (err: any) {
+      toast.error("Login failed", {
+        description: err.response?.data?.message || "Invalid credentials",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -64,7 +83,7 @@ const SignInPage = () => {
             </div>
 
             <Button type="submit" className="w-full mt-4">
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 

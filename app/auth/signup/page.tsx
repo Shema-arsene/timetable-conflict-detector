@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, FormEvent } from "react"
+import { useRouter } from "next/navigation"
 import {
   Card,
   CardHeader,
@@ -12,18 +13,50 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { registerUser } from "@/services/auth"
+import { toast } from "sonner"
 
 const SignUpPage = () => {
+  const router = useRouter()
+
+  const [firstName, setFirstName] = useState("")
+  const [secondName, setSecondName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-
-  //   alert("Signup Page")
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    // await registerUser({ email, password })
-    console.log({ email, password })
+
+    if (password !== confirmPassword) {
+      toast.error("Password mismatch", {
+        description: "Passwords do not match.",
+      })
+      return
+    }
+
+    if (password.length < 6) {
+      toast.error("Weak password", {
+        description: "Password must be at least 6 characters.",
+      })
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      await registerUser(firstName, secondName, email, password)
+      toast.success("Account created!", {
+        description: "You have successfully registered.",
+      })
+      router.push("/")
+    } catch (err: any) {
+      toast.error("Registration failed", {
+        description: err.response?.data?.message || "Failed to create account",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -43,6 +76,32 @@ const SignUpPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* First Name */}
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Enter your first name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Second Name */}
+            <div className="space-y-2">
+              <Label htmlFor="secondName">Second Name</Label>
+              <Input
+                id="secondName"
+                type="text"
+                placeholder="Enter your second name"
+                value={secondName}
+                onChange={(e) => setSecondName(e.target.value)}
+                required
+              />
+            </div>
+
             {/* School e-mail */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
