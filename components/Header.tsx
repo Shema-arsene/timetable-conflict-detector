@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/context/AuthContext"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const Header = () => {
+  const { user, isAuthenticated, logout } = useAuth()
+  const router = useRouter()
+
   const title = "</>"
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const isLoggedIn = false // replace with real auth state
+  const isLoggedIn = !!user
 
   const navLinks = [
     { href: "/", label: "Dashboard" },
@@ -24,6 +30,14 @@ const Header = () => {
   const isActive = (href: string) => {
     if (href === "/") return pathname === href
     return pathname.startsWith(href)
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/auth/signin")
+    toast.success("Logged out", {
+      description: "You have been successfully logged out.",
+    })
   }
 
   return (
@@ -54,9 +68,23 @@ const Header = () => {
             </Link>
           ))}
 
-          <Link href="/auth/signin">
+          {/* <Link href="/auth/signin">
             <Button variant="default">Sign In</Button>
-          </Link>
+          </Link> */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-600">
+                {user?.firstName} {user?.secondName}
+              </span>
+              <Button variant="outline" onClick={handleLogout}>
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Link href="/auth/signin">
+              <Button variant="default">Sign In</Button>
+            </Link>
+          )}
         </nav>
 
         {/* Hamburger Button*/}
@@ -85,6 +113,9 @@ const Header = () => {
           </div>
 
           <nav className="p-4 flex flex-col space-y-2">
+            <span className="text-sm text-gray-600">
+              {user?.firstName} {user?.secondName}
+            </span>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -115,9 +146,36 @@ const Header = () => {
                 onClick={() => setOpen(false)}
                 className="w-full"
               >
-                <Button variant="default" className="w-full">
-                  Sign In
-                </Button>
+                {/* Sign in/out button for mobile */}
+                <div className="flex items-center justify-center pt-4">
+                  {isAuthenticated ? (
+                    <div className="flex flex-col items-center gap-3 w-full">
+                      <span className="text-sm text-gray-600">
+                        {user?.email}
+                      </span>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          handleLogout()
+                          setOpen(false)
+                        }}
+                        className="w-full"
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => setOpen(false)}
+                      className="w-full"
+                    >
+                      <Button variant="default" className="w-full">
+                        Sign In
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </Link>
             </div>
           </nav>
