@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Lecturer } from "../../types/lecturer"
+import { Lecturer } from "@/types/lecturer"
 import axios from "axios"
 import {
   Table,
