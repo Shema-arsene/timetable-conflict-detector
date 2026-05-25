@@ -9,6 +9,7 @@ import lecturerRoutes from "./routes/lecturer.routes.js"
 import roomRoutes from "./routes/room.routes.js"
 import timetableRoutes from "./routes/timetable.routes.js"
 import schoolRoutes from "./routes/school.routes.js"
+import authRoutes from "./routes/auth.routes.js"
 
 // Load environment variables
 dotenv.config()
@@ -26,6 +27,7 @@ app.use("/api/lecturers", lecturerRoutes)
 app.use("/api/rooms", roomRoutes)
 app.use("/api/timetables", timetableRoutes)
 app.use("/api/schools", schoolRoutes)
+app.use("/api/auth", authRoutes)
 
 // Health check
 app.get("/api/health", (_req, res) => {
