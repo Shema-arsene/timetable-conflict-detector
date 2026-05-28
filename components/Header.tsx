@@ -10,8 +10,10 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 const Header = () => {
-  const { user, isAuthenticated, logout } = useAuth()
   const router = useRouter()
+
+  const { user, isAuthenticated, logout } = useAuth()
+  const isAdminOrDean = user?.role === "admin" || user?.role === "dean" // Add this line
 
   const title = "</>"
   const pathname = usePathname()
@@ -97,6 +99,7 @@ const Header = () => {
         </button>
 
         {/* Responsive Nav */}
+        {/* Responsive Nav */}
         <div
           className={`md:hidden fixed top-0 right-0 h-full w-64 bg-gray-50 shadow-lg transform transition-transform duration-500 ease-in-out z-50 ${
             open ? "translate-x-0" : "translate-x-full"
@@ -113,9 +116,21 @@ const Header = () => {
           </div>
 
           <nav className="p-4 flex flex-col space-y-2">
-            <span className="text-sm text-gray-600">
-              {user?.firstName} {user?.secondName}
-            </span>
+            {/* User info in mobile menu */}
+            {isAuthenticated && (
+              <div className="py-2 px-4 border-b mb-2">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.firstName} {user?.secondName}
+                </p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+                {isAdminOrDean && (
+                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded-full mt-1 inline-block">
+                    {user?.role === "admin" ? "Admin" : "Dean"}
+                  </span>
+                )}
+              </div>
+            )}
+
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -128,7 +143,6 @@ const Header = () => {
                 }`}
               >
                 <span className="relative z-10">{link.label}</span>
-                {/* Slide animation on hover */}
                 <span
                   className={`absolute left-0 top-0 h-full bg-gray-200 transform transition-transform duration-300 z-0 ${
                     isActive(link.href)
@@ -139,44 +153,30 @@ const Header = () => {
               </Link>
             ))}
 
-            {/* Sign in button for mobile */}
-            <div className="flex items-center justify-center pt-4">
-              <Link
-                href="/auth/signin"
-                onClick={() => setOpen(false)}
-                className="w-full"
-              >
-                {/* Sign in/out button for mobile */}
-                <div className="flex items-center justify-center pt-4">
-                  {isAuthenticated ? (
-                    <div className="flex flex-col items-center gap-3 w-full">
-                      <span className="text-sm text-gray-600">
-                        {user?.email}
-                      </span>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          handleLogout()
-                          setOpen(false)
-                        }}
-                        className="w-full"
-                      >
-                        Sign Out
-                      </Button>
-                    </div>
-                  ) : (
-                    <Link
-                      href="/auth/signin"
-                      onClick={() => setOpen(false)}
-                      className="w-full"
-                    >
-                      <Button variant="default" className="w-full">
-                        Sign In
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </Link>
+            {/* Auth buttons for mobile - FIXED: No nested Links */}
+            <div className="flex items-center justify-center pt-4 mt-2 border-t">
+              {isAuthenticated ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    handleLogout()
+                    setOpen(false)
+                  }}
+                  className="w-full"
+                >
+                  Sign Out
+                </Button>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setOpen(false)}
+                  className="w-full"
+                >
+                  <Button variant="default" className="w-full">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </nav>
         </div>
