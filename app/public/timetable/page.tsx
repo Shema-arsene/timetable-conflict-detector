@@ -35,11 +35,11 @@ type Timetable = {
 }
 
 const TimetablesPage = () => {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading: authLoading } = useAuth()
   const router = useRouter()
 
   const [timetables, setTimetables] = useState<Timetable[]>([])
-  // const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filteredTimetables, setFilteredTimetables] = useState<Timetable[]>([])
   const [filters, setFilters] = useState<FilterOptions>({
@@ -63,33 +63,13 @@ const TimetablesPage = () => {
         description: "There was an error fetching the timetables",
       })
     } finally {
-      // setLoading(false)
+      setDataLoading(false)
     }
   }
 
   useEffect(() => {
     fetchTimetables()
   }, [])
-
-  // useEffect(() => {
-  //   if (!loading && !isAuthenticated) {
-  //     router.push("/auth/signin")
-  //   }
-  // }, [loading, isAuthenticated, router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <Card className="max-w-6xl mx-auto p-6">
-          <div className="text-center py-8">Loading timetables...</div>
-        </Card>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return null
-  }
 
   useEffect(() => {
     applyFilters()
@@ -174,15 +154,28 @@ const TimetablesPage = () => {
     { value: "weekend", label: "Weekend" },
   ]
 
-  // if (loading) {
+  // if (authLoading) {
   //   return (
-  //     <div className="min-h-screen bg-gray-50 p-6">
-  //       <Card className="max-w-6xl mx-auto p-6">
-  //         <div className="text-center py-8">Loading timetables...</div>
-  //       </Card>
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+  //         <p className="mt-4 text-gray-600">Loading timetables...</p>
+  //       </div>
   //     </div>
   //   )
   // }
+
+  // Show loading while auth is checking
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (error) {
     return (
@@ -190,6 +183,17 @@ const TimetablesPage = () => {
         <Card className="max-w-6xl mx-auto p-6">
           <div className="text-center py-8 text-red-600">{error}</div>
         </Card>
+      </div>
+    )
+  }
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading timetables...</p>
+        </div>
       </div>
     )
   }
@@ -218,7 +222,7 @@ const TimetablesPage = () => {
 
           {error && <ErrorState message={error} onRetry={fetchTimetables} />}
 
-          {!loading && filteredTimetables.length === 0 ? (
+          {!dataLoading && filteredTimetables.length === 0 ? (
             <EmptyState type="timetables" />
           ) : (
             <div className="mt-4">

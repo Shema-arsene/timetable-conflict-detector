@@ -1,15 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import axios from "axios"
+import { useAuth } from "@/context/AuthContext"
 
 const AddLecturerPage = () => {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
     firstName: "",
@@ -17,6 +20,27 @@ const AddLecturerPage = () => {
     email: "",
     phone: "",
   })
+
+  // Role check - only admin and dean can access this page
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || (user.role !== "admin" && user.role !== "dean")) {
+        router.push("/")
+      }
+    }
+  }, [authLoading, user, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+  if (!user || (user.role !== "admin" && user.role !== "dean")) return null
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
