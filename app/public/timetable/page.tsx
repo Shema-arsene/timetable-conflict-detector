@@ -71,11 +71,11 @@ const TimetablesPage = () => {
     fetchTimetables()
   }, [])
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push("/auth/signin")
-    }
-  }, [loading, isAuthenticated, router])
+  // useEffect(() => {
+  //   if (!loading && !isAuthenticated) {
+  //     router.push("/auth/signin")
+  //   }
+  // }, [loading, isAuthenticated, router])
 
   if (loading) {
     return (

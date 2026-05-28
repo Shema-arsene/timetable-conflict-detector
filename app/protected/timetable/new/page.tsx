@@ -12,6 +12,10 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { validateTimetableDates } from "@/lib/dateValidation"
 import { TriangleAlert, X } from "lucide-react"
+import Link from "next/link"
+
+// Authentication
+import { useAuth } from "@/context/AuthContext"
 
 // Types
 type SessionType = "day" | "evening" | "weekend"
@@ -153,6 +157,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const NewTimetablePage = () => {
   const router = useRouter()
+  const { user } = useAuth()
+  const canCreate = user?.role === "admin" || user?.role === "dean"
 
   // API data
   const [schoolsList, setSchoolsList] = useState<any[]>([])
@@ -412,9 +418,18 @@ const NewTimetablePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="mb-5 text-xl md:text-2xl font-bold">
+      <div className="flex justify-between items-center">
+        <h1>Timetables</h1>
+        {canCreate && (
+          <Link href="/timetable/new">
+            <Button>Create Timetable</Button>
+          </Link>
+        )}
+      </div>
+
+      {/* <h1 className="mb-5 text-xl md:text-2xl font-bold">
         Create a New Timetable
-      </h1>
+      </h1> */}
       <Card className="p-3 md:p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
