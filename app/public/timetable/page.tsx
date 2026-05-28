@@ -154,17 +154,6 @@ const TimetablesPage = () => {
     { value: "weekend", label: "Weekend" },
   ]
 
-  // if (authLoading) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-  //         <p className="mt-4 text-gray-600">Loading timetables...</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
-
   // Show loading while auth is checking
   if (authLoading) {
     return (
@@ -203,7 +192,7 @@ const TimetablesPage = () => {
       <Card className="max-w-6xl mx-auto p-3 md:p-6">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl">Timetables</CardTitle>
-          <Link href="/timetable/new">
+          <Link href="/protected/timetable/new">
             <Button>Create Timetable</Button>
           </Link>
         </CardHeader>
@@ -262,13 +251,15 @@ const TimetablesPage = () => {
                       <TableCell>{formatDate(timetable.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Link href={`/timetable/${timetable._id}`}>
+                          <Link href={`/public/timetable/${timetable._id}`}>
                             <Button size="sm" variant="outline">
                               <Eye className="w-4 h-4 mr-1" />
                               View
                             </Button>
                           </Link>
-                          <Link href={`/timetable/edit/${timetable._id}`}>
+                          <Link
+                            href={`/protected/timetable/edit/${timetable._id}`}
+                          >
                             <Button size="sm" variant="outline">
                               <Pencil className="w-4 h-4 mr-1" />
                               Edit

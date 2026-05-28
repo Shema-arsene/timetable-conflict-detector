@@ -67,7 +67,7 @@ const TimetableDetailPage = () => {
         <Card className="max-w-6xl mx-auto p-6">
           <div className="text-center py-8">
             <h2 className="text-xl font-semibold mb-2">Timetable not found</h2>
-            <Link href="/timetable">
+            <Link href="/public/timetable">
               <Button>Back to Timetables</Button>
             </Link>
           </div>
@@ -87,7 +87,7 @@ const TimetableDetailPage = () => {
           </Button>
           <div className="flex gap-2">
             <ExportOptions timetable={timetable} fileName={timetable.title} />
-            <Link href={`/timetable/edit/${params.id}`}>
+            <Link href={`/protected/timetable/edit/${params.id}`}>
               <Button variant="outline">
                 <Pencil className="w-4 h-4" />
                 Edit

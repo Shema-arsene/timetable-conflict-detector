@@ -105,7 +105,7 @@ const SchoolsPage = () => {
       <Card className="max-w-6xl mx-auto p-3 md:p-6">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl">Schools</CardTitle>
-          <Link href="/schools/new">
+          <Link href="/protected/schools/new">
             <Button>Add School</Button>
           </Link>
         </CardHeader>
@@ -148,7 +148,7 @@ const SchoolsPage = () => {
                         {school.description || "—"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link href={`/schools/${school._id}`}>
+                        <Link href={`/protected/schools/${school._id}`}>
                           <Button size="sm" variant="outline">
                             Edit
                           </Button>

@@ -124,7 +124,7 @@ const ModulesPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Modules</h1>
         <Button asChild>
-          <Link href="/modules/new">
+          <Link href="/protected/modules/new">
             <Plus className="mr-2 h-4 w-4" /> Add Module
           </Link>
         </Button>
@@ -175,7 +175,7 @@ const ModulesPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link href={`/modules/${module._id}`}>
+                        <Link href={`/protected/modules/${module._id}`}>
                           <Button size="sm" variant="outline">
                             Edit
                           </Button>

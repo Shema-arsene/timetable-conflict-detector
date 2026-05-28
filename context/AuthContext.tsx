@@ -48,7 +48,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     logoutUser()
     setUser(null)
-    router.push("/auth/signin")
+    // router.push("public/auth/signin")
+    router.push("/")
   }
 
   return (

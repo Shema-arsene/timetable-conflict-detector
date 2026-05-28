@@ -109,7 +109,7 @@ const LecturersPage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Lecturers</h1>
-          <Link href="/lecturers/new">
+          <Link href="/protected/lecturers/new">
             <Button>Add Lecturer</Button>
           </Link>
         </div>
@@ -153,7 +153,7 @@ const LecturersPage = () => {
                         <TableCell>{lecturer.email}</TableCell>
                         <TableCell>{lecturer.phone || "—"}</TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/lecturers/${lecturer._id}`}>
+                          <Link href={`/protected/lecturers/${lecturer._id}`}>
                             <Button size="sm" variant="outline">
                               Edit
                             </Button>
