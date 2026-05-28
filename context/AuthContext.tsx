@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
+  updateUser: (user: User | null) => void
   logout: () => void
   loading: boolean
 }
@@ -45,12 +46,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false)
   }, [])
 
+  const updateUser = (userData: User | null) => {
+    setUser(userData)
+  }
+
   const logout = () => {
     logoutUser()
     setUser(null)
     // router.push("public/auth/signin")
     router.push("/")
   }
+
+  useEffect(() => {
+    setupAuthInterceptor()
+
+    const checkAuth = () => {
+      const token = localStorage.getItem("token")
+      if (token) {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } else {
+        setUser(null)
+      }
+      setLoading(false)
+    }
+
+    checkAuth()
+
+    // Listen for storage changes (for cross-tab updates)
+    window.addEventListener("storage", checkAuth)
+
+    return () => {
+      window.removeEventListener("storage", checkAuth)
+    }
+  }, [])
 
   return (
     <AuthContext.Provider
@@ -59,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAuthenticated: !!user,
         logout,
         loading,
+        updateUser,
       }}
     >
       {children}

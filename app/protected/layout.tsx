@@ -29,9 +29,9 @@ export default function ProtectedLayout({
     )
   }
 
-  if (!isAuthenticated) {
-    return null
-  }
+  // if (!isAuthenticated) {
+  //   return null
+  // }
 
   // return <>{children}</>
   return (

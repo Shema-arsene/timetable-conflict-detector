@@ -13,7 +13,7 @@ const Header = () => {
   const router = useRouter()
 
   const { user, isAuthenticated, logout } = useAuth()
-  const isAdminOrDean = user?.role === "admin" || user?.role === "dean" // Add this line
+  const isAdminOrDean = user?.role === "admin" || user?.role === "dean"
 
   const title = "</>"
   const pathname = usePathname()
@@ -41,6 +41,24 @@ const Header = () => {
       description: "You have been successfully logged out.",
     })
   }
+
+  const getInitials = (firstName: string, secondName: string) => {
+    const firstInitial = firstName?.charAt(0).toUpperCase() || ""
+    const lastInitial = secondName?.charAt(0).toUpperCase() || ""
+    return `${firstInitial}${lastInitial}`
+  }
+  const userInitials = user ? getInitials(user.firstName, user.secondName) : ""
+
+  const capitalizeName = (firstName: string, secondName: string) => {
+    const capitalizedFirst =
+      firstName?.charAt(0).toUpperCase() + firstName?.slice(1).toLowerCase() ||
+      ""
+    const capitalizedLast =
+      secondName?.charAt(0).toUpperCase() +
+        secondName?.slice(1).toLowerCase() || ""
+    return `${capitalizedFirst} ${capitalizedLast}`
+  }
+  const fullName = user ? capitalizeName(user.firstName, user.secondName) : ""
 
   return (
     <header className="w-full border-b bg-white">
@@ -70,14 +88,22 @@ const Header = () => {
             </Link>
           ))}
 
-          {/* <Link href="/auth/signin">
-            <Button variant="default">Sign In</Button>
-          </Link> */}
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">
-                {user?.firstName} {user?.secondName}
-              </span>
+              {/* Avatar with initials */}
+              <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-600 flex items-center justify-center text-gray-600 text-sm font-medium">
+                {userInitials}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-700">
+                  {fullName}
+                </span>
+                {isAdminOrDean && (
+                  <span className="text-xs text-gray-500">
+                    {user?.role === "admin" ? "Admin" : "Dean"}
+                  </span>
+                )}
+              </div>
               <Button variant="outline" onClick={handleLogout}>
                 Sign Out
               </Button>

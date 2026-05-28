@@ -30,10 +30,11 @@ const SignInPage = () => {
 
     try {
       await loginUser(email, password)
+      router.push("/")
+      router.refresh()
       toast.success("Login successful!", {
         description: "Welcome back!",
       })
-      router.push("/")
     } catch (err: any) {
       toast.error("Login failed", {
         description: err.response?.data?.message || "Invalid credentials",
@@ -89,7 +90,7 @@ const SignInPage = () => {
 
           <p className="text-sm text-center text-gray-600 mt-4">
             Don't have an account?{" "}
-            <a href="/auth/signup" className="text-blue-600 underline">
+            <a href="/public/auth/signup" className="text-blue-600 underline">
               Create one
             </a>
           </p>

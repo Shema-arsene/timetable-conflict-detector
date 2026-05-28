@@ -45,11 +45,12 @@ const SignUpPage = () => {
     setLoading(true)
 
     try {
-      await registerUser(firstName, secondName, email, password)
+      await registerUser(email, password, firstName, secondName)
       toast.success("Account created!", {
         description: "You have successfully registered.",
       })
       router.push("/")
+      router.refresh()
     } catch (err: any) {
       toast.error("Registration failed", {
         description: err.response?.data?.message || "Failed to create account",
@@ -148,7 +149,7 @@ const SignUpPage = () => {
 
           <p className="text-sm text-center text-gray-600 mt-4">
             Already have an account?{" "}
-            <a href="/auth/signin" className="text-blue-600 underline">
+            <a href="/public/auth/signin" className="text-blue-600 underline">
               Sign in
             </a>
           </p>

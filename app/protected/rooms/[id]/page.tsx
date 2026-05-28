@@ -128,7 +128,7 @@ const EditRoomPage = () => {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/rooms")}
+            onClick={() => router.push("/public/rooms")}
           >
             <ArrowLeft />
           </Button>

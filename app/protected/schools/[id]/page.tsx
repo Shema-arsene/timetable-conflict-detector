@@ -131,7 +131,7 @@ const EditSchoolPage = () => {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => router.push("/schools")}
+            onClick={() => router.push("/public/schools")}
           >
             <ArrowLeft />
           </Button>

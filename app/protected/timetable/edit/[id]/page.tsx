@@ -778,10 +778,7 @@ const EditTimetablePage = () => {
               <div className="flex-1" />
               <div className="text-right">
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => router.push("/timetable")}
-                  >
+                  <Button variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
                   <Button onClick={handleUpdate} disabled={saving}>

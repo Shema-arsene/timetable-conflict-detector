@@ -140,7 +140,10 @@ const EditModulePage = () => {
     <section className="min-h-screen p-6 max-w-3xl mx-auto">
       <Card className="p-3 md:p-6">
         <div>
-          <Button variant="ghost" onClick={() => router.push("/modules")}>
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/public/modules")}
+          >
             <ArrowLeft />
           </Button>
         </div>
