@@ -495,25 +495,25 @@ const HomePage = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 flex flex-col items-center gap-2">
-                <Link href="/rooms/new" className="w-full">
+                <Link href="/protected/rooms/new" className="w-full">
                   <Button variant="outline" className="w-full justify-start">
                     <DoorOpen className="w-4 h-4 mr-2" />
                     Add New Room
                   </Button>
                 </Link>
-                <Link href="/lecturers/new" className="w-full">
+                <Link href="/protected/lecturers/new" className="w-full">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="w-4 h-4 mr-2" />
                     Add New Lecturer
                   </Button>
                 </Link>
-                <Link href="/modules/new" className="w-full">
+                <Link href="/protected/modules/new" className="w-full">
                   <Button variant="outline" className="w-full justify-start">
                     <BookOpen className="w-4 h-4 mr-2" />
                     Add New Module
                   </Button>
                 </Link>
-                <Link href="/schools/new" className="w-full">
+                <Link href="/protected/schools/new" className="w-full">
                   <Button variant="outline" className="w-full justify-start">
                     <TrendingUp className="w-4 h-4 mr-2" />
                     Add New School
