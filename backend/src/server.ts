@@ -16,7 +16,7 @@ dotenv.config()
 
 // CORS configuration
 const allowedOrigins = [
-  "https://timetable-conflict-detector.vercel.app/", // Your actual Vercel frontend URL
+  "https://timetable-conflict-detector.vercel.app", // Your actual Vercel frontend URL
   "http://localhost:3000", // Local development
   "http://localhost:3001",
   "https://timetable-conflict-detector.onrender.com", // Backend itself
