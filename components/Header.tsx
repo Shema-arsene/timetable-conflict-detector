@@ -20,11 +20,11 @@ const Header = () => {
 
   const navLinks = [
     { href: "/", label: "Dashboard" },
-    { href: "/timetable", label: "Timetable" },
-    { href: "/rooms", label: "Rooms" },
-    { href: "/lecturers", label: "Lecturers" },
-    { href: "/schools", label: "Schools" },
-    { href: "/modules", label: "Modules" },
+    { href: "/public/timetable", label: "Timetable" },
+    { href: "/public/rooms", label: "Rooms" },
+    { href: "/public/lecturers", label: "Lecturers" },
+    { href: "/public/schools", label: "Schools" },
+    { href: "/public/modules", label: "Modules" },
   ]
 
   const isActive = (href: string) => {
