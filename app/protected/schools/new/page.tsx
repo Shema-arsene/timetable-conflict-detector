@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 
@@ -12,8 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 
 import { CAMPUSES } from "@/constants/campus"
+import { useAuth } from "@/context/AuthContext"
 
 const NewSchoolPage = () => {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -23,6 +25,14 @@ const NewSchoolPage = () => {
     campus: "",
     description: "",
   })
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || (user.role !== "admin" && user.role !== "dean")) {
+        router.push("/")
+      }
+    }
+  }, [authLoading, user, router])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -58,6 +68,17 @@ const NewSchoolPage = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

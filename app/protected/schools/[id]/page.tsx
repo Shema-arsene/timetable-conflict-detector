@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
+import { useAuth } from "@/context/AuthContext"
 
 interface School {
   _id: string
@@ -20,11 +21,11 @@ interface School {
 }
 
 const EditSchoolPage = () => {
+  const { user, loading: authLoading } = useAuth()
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
 
   const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(true)
   const [deleting, setDeleting] = useState(false)
 
   const [form, setForm] = useState<School>({
@@ -54,7 +55,7 @@ const EditSchoolPage = () => {
         toast.error("Failed to load school details.")
         router.push("/schools")
       } finally {
-        setFetching(false)
+        setLoading(false)
       }
     }
 
@@ -112,14 +113,13 @@ const EditSchoolPage = () => {
     }
   }
 
-  if (fetching) {
+  if (loading) {
     return (
-      <div className="min-h-screen max-w-3xl mx-auto p-6">
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            Loading school...
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     )
   }

@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { TriangleAlert, X } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 // Types
 type SessionType = "day" | "evening" | "weekend"
@@ -126,6 +127,8 @@ function detectConflictsFromGroups(
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const EditTimetablePage = () => {
+  const { user, loading: authLoading } = useAuth()
+
   const router = useRouter()
   const params = useParams()
   const timetableId = params.id as string
@@ -149,6 +152,14 @@ const EditTimetablePage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [viewConflicts, setViewConflicts] = useState(true)
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || (user.role !== "admin" && user.role !== "dean")) {
+        router.push("/")
+      }
+    }
+  }, [authLoading, user, router])
 
   // Fetch all necessary data
   useEffect(() => {
@@ -467,10 +478,11 @@ const EditTimetablePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <Card className="w-full max-w-lg p-6">
-          <div className="text-center py-8">Loading timetable...</div>
-        </Card>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     )
   }

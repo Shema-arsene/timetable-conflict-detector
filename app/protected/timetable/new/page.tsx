@@ -156,8 +156,8 @@ function detectConflictsFromGroups(
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const NewTimetablePage = () => {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const { user } = useAuth()
   const canCreate = user?.role === "admin" || user?.role === "dean"
 
   // API data
@@ -205,6 +205,14 @@ const NewTimetablePage = () => {
   ])
 
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || (user.role !== "admin" && user.role !== "dean")) {
+        router.push("/")
+      }
+    }
+  }, [authLoading, user, router])
 
   const conflicts = detectConflictsFromGroups(
     schools,
@@ -414,6 +422,17 @@ const NewTimetablePage = () => {
       })
       setSaving(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

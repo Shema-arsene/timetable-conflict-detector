@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 
 import axios from "axios"
+import { useAuth } from "@/context/AuthContext"
 
 interface School {
   _id: string
@@ -25,8 +26,10 @@ interface ModuleForm {
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const EditModulePage = () => {
-  const { id } = useParams<{ id: string }>()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  const { id } = useParams<{ id: string }>()
 
   const [form, setForm] = useState<ModuleForm>({
     code: "",
@@ -38,6 +41,14 @@ const EditModulePage = () => {
   const [saving, setSaving] = useState(false)
   const [schools, setSchools] = useState<School[]>([])
   const [deleting, setDeleting] = useState(false)
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || (user.role !== "admin" && user.role !== "dean")) {
+        router.push("/")
+      }
+    }
+  }, [authLoading, user, router])
 
   const fetchSchools = async () => {
     const { data } = await axios.get(`${API_URL}/api/schools`)
@@ -133,7 +144,14 @@ const EditModulePage = () => {
   }
 
   if (loading) {
-    return <div className="p-6">Loading module...</div>
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

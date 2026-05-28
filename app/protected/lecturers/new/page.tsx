@@ -40,7 +40,7 @@ const AddLecturerPage = () => {
       </div>
     )
   }
-  if (!user || (user.role !== "admin" && user.role !== "dean")) return null
+  // if (!user || (user.role !== "admin" && user.role !== "dean")) return null
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
