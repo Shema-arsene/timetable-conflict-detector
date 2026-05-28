@@ -317,13 +317,13 @@ const HomePage = () => {
           <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => router.push("/timetable")}
+              onClick={() => router.push("/public/timetable")}
               className="gap-2"
             >
               <Calendar className="w-4 h-4" />
               View All
             </Button>
-            <Link href="/timetable/new">
+            <Link href="/protected/timetable/new">
               <Button className="gap-2">
                 <PlusCircle className="w-4 h-4" />
                 Create Timetable
@@ -376,7 +376,7 @@ const HomePage = () => {
                   <div className="text-center py-8">
                     <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No timetables yet</p>
-                    <Link href="/timetable/new">
+                    <Link href="/protected/timetable/new">
                       <Button variant="link" className="mt-2">
                         Create your first timetable
                       </Button>
@@ -423,72 +423,6 @@ const HomePage = () => {
 
           {/* Recent Conflicts */}
           <div>
-            {/* <Card className="px-3 py-5">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                  Recent Conflicts
-                </CardTitle>
-                {recentConflicts.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      setShowResolvedConflicts(!showResolvedConflicts)
-                    }
-                  >
-                    {showResolvedConflicts ? "Hide resolved" : "Show resolved"}
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent>
-                {recentConflicts.length === 0 ? (
-                  <div className="text-center py-4">
-                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                    <p className="text-gray-600 font-medium">All clear!</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      No conflicts detected
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {recentConflicts.map((conflict) => (
-                      <div
-                        key={conflict.id}
-                        className={`p-3 rounded-lg border ${getSeverityColor(conflict.severity)}`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">
-                              {conflict.message}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="outline" className="text-xs">
-                                {conflict.type}
-                              </Badge>
-                              <span className="text-xs opacity-75">
-                                {conflict.time}
-                              </span>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              resolveConflict(conflict.id)
-                            }}
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card> */}
-
             {/* Quick Actions */}
             <Card className="px-3 py-5">
               <CardHeader>
