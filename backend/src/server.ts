@@ -16,32 +16,17 @@ dotenv.config()
 
 // CORS configuration
 const allowedOrigins = [
-  "https://timetable-conflict-detector.vercel.app", // Your actual Vercel frontend URL
+  "https://timetable-conflict-detector.vercel.app", // Actual Vercel frontend URL
   "http://localhost:3000", // Local development
-  "http://localhost:3001",
-  "https://timetable-conflict-detector.onrender.com", // Backend itself
+  "https://timetable-conflict-detector.onrender.com", // Backend URL
 ]
 
 const app = express()
 
 // Middleware
-// app.use(cors())
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true)
-
-      if (
-        allowedOrigins.indexOf(origin) !== -1 ||
-        process.env.NODE_ENV !== "production"
-      ) {
-        callback(null, true)
-      } else {
-        console.log("Blocked origin:", origin)
-        callback(new Error("Not allowed by CORS"))
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
