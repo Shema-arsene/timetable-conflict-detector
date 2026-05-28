@@ -36,7 +36,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout()
-    router.push("/auth/signin")
+    router.push("/")
     toast.success("Logged out", {
       description: "You have been successfully logged out.",
     })
@@ -83,7 +83,7 @@ const Header = () => {
               </Button>
             </div>
           ) : (
-            <Link href="/auth/signin">
+            <Link href="/public/auth/signin">
               <Button variant="default">Sign In</Button>
             </Link>
           )}
