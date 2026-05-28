@@ -259,7 +259,7 @@ const HomePage = () => {
       value: stats.totalTimetables,
       icon: Calendar,
       color: "bg-blue-500",
-      link: "/timetable",
+      link: "/public/timetable",
       hint: `${stats.upcomingTimetables} upcoming`,
     },
     {
@@ -267,7 +267,7 @@ const HomePage = () => {
       value: stats.totalConflicts,
       icon: AlertTriangle,
       color: "bg-red-500",
-      link: "/timetable?conflicts=true",
+      link: "/public/timetable?conflicts=true",
       hint: "Needs attention",
     },
     {
@@ -275,28 +275,28 @@ const HomePage = () => {
       value: stats.totalLecturers,
       icon: Users,
       color: "bg-green-500",
-      link: "/lecturers",
+      link: "/public/lecturers",
     },
     {
       label: "Rooms",
       value: stats.totalRooms,
       icon: DoorOpen,
       color: "bg-purple-500",
-      link: "/rooms",
+      link: "/public/rooms",
     },
     {
       label: "Modules",
       value: stats.totalModules,
       icon: BookOpen,
       color: "bg-yellow-500",
-      link: "/modules",
+      link: "/public/modules",
     },
     {
       label: "Schools",
       value: stats.totalSchools,
       icon: TrendingUp,
       color: "bg-indigo-500",
-      link: "/schools",
+      link: "/public/schools",
     },
   ]
 
@@ -365,7 +365,7 @@ const HomePage = () => {
             <Card className="p-3">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Recent Timetables</CardTitle>
-                <Link href="/timetable">
+                <Link href="/public/timetable">
                   <Button variant="ghost" size="sm" className="gap-1">
                     View all <ArrowRight className="w-4 h-4" />
                   </Button>
@@ -386,7 +386,7 @@ const HomePage = () => {
                   <div className="space-y-4">
                     {recentTimetables.map((timetable) => (
                       <Link
-                        href={`/timetable/${timetable._id}`}
+                        href={`/public/timetable/${timetable._id}`}
                         key={timetable._id}
                       >
                         <div className="flex items-center justify-between p-3 m-3 rounded-lg hover:bg-gray-50 transition-colors border">
